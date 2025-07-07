@@ -1,0 +1,26 @@
+@using AzureDocGen.Web.Services
+@using AzureDocGen.Data.Enums
+@inject IPermissionService PermissionService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (IsSystemAdmin)
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    
+    private bool IsSystemAdmin { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        
+        if (!string.IsNullOrEmpty(userId))
+        {
+            IsSystemAdmin = await PermissionService.HasSystemRoleAsync(userId, SystemRoleType.SystemAdministrator);
+        }
+    }
+}

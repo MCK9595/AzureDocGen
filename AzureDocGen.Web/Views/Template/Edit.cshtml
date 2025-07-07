@@ -1,0 +1,66 @@
+@model AzureDocGen.Web.Models.TemplateEditViewModel
+@{
+    ViewData["Title"] = "テンプレート編集";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">テンプレート一覧</a></li>
+        <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
+        <li class="breadcrumb-item active" aria-current="page">編集</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>@ViewData["Title"]</h2>
+
+        <form asp-action="Edit" method="post">
+            <input asp-for="Id" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="SharingLevel" class="form-label"></label>
+                <select asp-for="SharingLevel" class="form-select">
+                    <option value="@AzureDocGen.Data.Entities.SharingLevel.Private">プライベート - 自分のみアクセス可能</option>
+                    <option value="@AzureDocGen.Data.Entities.SharingLevel.Project">プロジェクト共有 - プロジェクトメンバーがアクセス可能</option>
+                    <option value="@AzureDocGen.Data.Entities.SharingLevel.Global">グローバル共有 - 全ユーザーがアクセス可能</option>
+                </select>
+                <span asp-validation-for="SharingLevel" class="text-danger"></span>
+                <div class="form-text">
+                    共有レベルを変更すると、アクセス可能なユーザーが変わります。
+                </div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> 
+                <strong>注意:</strong> テンプレートの基本情報のみ編集できます。パラメーター定義やテンプレート構造は詳細ページで編集してください。
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> キャンセル
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> 更新
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

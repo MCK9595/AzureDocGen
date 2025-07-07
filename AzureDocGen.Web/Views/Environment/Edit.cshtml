@@ -1,0 +1,81 @@
+@model AzureDocGen.Web.Models.EnvironmentEditViewModel
+@{
+    ViewData["Title"] = $"環境編集 - {Model.Name}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">プロジェクト一覧</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectId">@Model.ProjectName</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Environment" asp-action="Details" asp-route-id="@Model.Id">@Model.Name</a></li>
+        <li class="breadcrumb-item active" aria-current="page">編集</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">環境の編集</h4>
+                <small class="text-muted">プロジェクト: @Model.ProjectName</small>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="ProjectId" />
+                    <input type="hidden" asp-for="ProjectName" />
+                    <input type="hidden" asp-for="HasDesignDocuments" />
+                    
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">環境名 <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="form-text">
+                            環境の名前を変更できます。同じプロジェクト内で重複する名前は使用できません。
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label">説明</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    @if (Model.HasDesignDocuments)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>注意</strong>
+                            <p class="mb-0 mt-2">この環境には設計書が関連付けられています。環境名を変更する場合は、関連する設計書への影響を考慮してください。</p>
+                        </div>
+                    }
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> 詳細に戻る
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> 更新
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // エラーがある場合はアラートを表示
+            var validationSummary = $('[data-valmsg-summary="true"]');
+            if (validationSummary.find('ul li').length > 0) {
+                $('.alert-danger').show();
+            }
+        });
+    </script>
+}

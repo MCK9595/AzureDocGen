@@ -1,0 +1,405 @@
+@model AzureDocGen.Web.Models.TemplateDetailsViewModel
+@{
+    ViewData["Title"] = $"テンプレート詳細 - {Model.Name}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">テンプレート一覧</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>@Model.Name <span class="badge @GetSharingLevelBadgeClass(Model.SharingLevel)">@GetSharingLevelDisplayName(Model.SharingLevel)</span></h2>
+        <p class="text-muted">バージョン @Model.Version</p>
+    </div>
+    <div>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> 編集
+            </a>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createVersionModal">
+                <i class="bi bi-layers-half"></i> 新バージョン
+            </button>
+        }
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#duplicateModal">
+            <i class="bi bi-files"></i> 複製
+        </button>
+        @if (Model.IsOwner)
+        {
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> 削除
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- テンプレート情報 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">テンプレート情報</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+                <dl class="row">
+                    <dt class="col-sm-3">作成日</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                    
+                    <dt class="col-sm-3">作成者</dt>
+                    <dd class="col-sm-9">@Model.CreatedBy</dd>
+                    
+                    <dt class="col-sm-3">共有レベル</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge @GetSharingLevelBadgeClass(Model.SharingLevel)">
+                            @GetSharingLevelDisplayName(Model.SharingLevel)
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-sm-3">バージョン</dt>
+                    <dd class="col-sm-9">@Model.Version</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- パラメーター定義 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">パラメーター定義</h5>
+                @if (Model.CanEdit)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addParameterModal">
+                        <i class="bi bi-plus"></i> パラメーター追加
+                    </button>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.Parameters.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>パラメーター名</th>
+                                    <th>タイプ</th>
+                                    <th>必須</th>
+                                    <th>デフォルト値</th>
+                                    @if (Model.CanEdit)
+                                    {
+                                        <th>操作</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var param in Model.Parameters)
+                                {
+                                    <tr>
+                                        <td>@param.Name</td>
+                                        <td><code>@param.ParameterType</code></td>
+                                        <td>
+                                            @if (param.IsRequired)
+                                            {
+                                                <span class="badge bg-warning">必須</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">任意</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(param.DefaultValue))
+                                            {
+                                                <code>@param.DefaultValue</code>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        @if (Model.CanEdit)
+                                        {
+                                            <td>
+                                                <form asp-action="DeleteParameter" method="post" class="d-inline">
+                                                    <input type="hidden" name="parameterId" value="@param.Id" />
+                                                    <input type="hidden" name="templateId" value="@Model.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" 
+                                                            onclick="return confirm('パラメーター「@param.Name」を削除しますか？')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">パラメーターが定義されていません。</p>
+                }
+            </div>
+        </div>
+
+        <!-- テンプレート構造 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">テンプレート構造</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Structure != null && Model.Structure.Any())
+                {
+                    <pre class="bg-light p-3 rounded"><code>@System.Text.Json.JsonSerializer.Serialize(Model.Structure, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</code></pre>
+                }
+                else
+                {
+                    <p class="text-muted">テンプレート構造が定義されていません。</p>
+                    @if (Model.CanEdit)
+                    {
+                        <a href="#" class="btn btn-outline-primary disabled">
+                            <i class="bi bi-diagram-3"></i> ビジュアルエディターで編集 (未実装)
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- バージョン履歴 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">バージョン履歴</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Versions.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var version in Model.Versions)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center @(version.Id == Model.Id ? "active" : "")">
+                                <div>
+                                    <strong>バージョン @version.Version</strong>
+                                    <br>
+                                    <small class="text-muted">@version.CreatedAt.ToString("yyyy/MM/dd HH:mm")</small>
+                                </div>
+                                @if (version.Id != Model.Id)
+                                {
+                                    <a asp-action="Details" asp-route-id="@version.Id" class="btn btn-sm btn-outline-primary">
+                                        表示
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">現在</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">バージョン履歴がありません。</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- パラメーター追加モーダル -->
+@if (Model.CanEdit)
+{
+    <div class="modal fade" id="addParameterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="AddParameter" method="post">
+                    <input type="hidden" name="templateId" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">パラメーター追加</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="parameterName" class="form-label">パラメーター名</label>
+                            <input type="text" class="form-control" id="parameterName" name="parameterName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="parameterType" class="form-label">パラメータータイプ</label>
+                            <select class="form-select" id="parameterType" name="parameterType" required>
+                                <option value="Text">テキスト</option>
+                                <option value="Number">数値</option>
+                                <option value="Boolean">真偽値</option>
+                                <option value="Select">選択肢</option>
+                                <option value="Date">日付</option>
+                                <option value="Email">メールアドレス</option>
+                                <option value="Url">URL</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isRequired" name="isRequired" value="true">
+                                <input type="hidden" name="isRequired" value="false">
+                                <label class="form-check-label" for="isRequired">
+                                    必須項目
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="defaultValue" class="form-label">デフォルト値</label>
+                            <input type="text" class="form-control" id="defaultValue" name="defaultValue">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-primary">追加</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 新バージョン作成モーダル -->
+@if (Model.CanEdit)
+{
+    <div class="modal fade" id="createVersionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="CreateVersion" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">新バージョンの作成</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            現在のテンプレート（バージョン @Model.Version）をベースに、新しいバージョン @(Model.Version + 1) を作成します。
+                        </div>
+                        <p>新しいバージョンには以下がコピーされます：</p>
+                        <ul>
+                            <li>テンプレート構造</li>
+                            <li>すべてのパラメーター定義</li>
+                            <li>基本情報（名前、説明、共有レベル）</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-success">新バージョン作成</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 複製モーダル -->
+<div class="modal fade" id="duplicateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Duplicate" method="post">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">テンプレートの複製</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newName" class="form-label">新しいテンプレート名</label>
+                        <input type="text" class="form-control" id="newName" name="newName" value="@Model.Name (コピー)" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        複製されたテンプレートはプライベートとして作成されます。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">複製</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 削除確認モーダル -->
+@if (Model.IsOwner)
+{
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">テンプレート削除の確認</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            テンプレート「@Model.Name」を削除しますか？この操作は取り消せません。
+                        </div>
+                        <p>以下のデータもすべて削除されます：</p>
+                        <ul>
+                            <li>すべてのパラメーター定義</li>
+                            <li>テンプレート構造</li>
+                            <li>このテンプレートを使用して作成された設計書への参照</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    private string GetSharingLevelDisplayName(AzureDocGen.Data.Entities.SharingLevel sharingLevel)
+    {
+        return sharingLevel switch
+        {
+            AzureDocGen.Data.Entities.SharingLevel.Private => "プライベート",
+            AzureDocGen.Data.Entities.SharingLevel.Project => "プロジェクト共有",
+            AzureDocGen.Data.Entities.SharingLevel.Global => "グローバル共有",
+            _ => sharingLevel.ToString()
+        };
+    }
+    
+    private string GetSharingLevelBadgeClass(AzureDocGen.Data.Entities.SharingLevel sharingLevel)
+    {
+        return sharingLevel switch
+        {
+            AzureDocGen.Data.Entities.SharingLevel.Private => "bg-secondary",
+            AzureDocGen.Data.Entities.SharingLevel.Project => "bg-info",
+            AzureDocGen.Data.Entities.SharingLevel.Global => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+}

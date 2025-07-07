@@ -11,7 +11,12 @@
       "Bash(dotnet add:*)",
       "Bash(dotnet build)",
       "Bash(dotnet run)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(grep:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

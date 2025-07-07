@@ -10,5 +10,6 @@ public class Project
     
     public virtual ICollection<Environment> Environments { get; set; } = new List<Environment>();
     public virtual ICollection<NamingRule> NamingRules { get; set; } = new List<NamingRule>();
+    public virtual ICollection<ProjectUserRole> ProjectUserRoles { get; set; } = new List<ProjectUserRole>();
     public virtual ApplicationUser? Creator { get; set; }
 }

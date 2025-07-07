@@ -1,0 +1,313 @@
+@model AzureDocGen.Web.Models.ProjectDetailsViewModel
+@{
+    ViewData["Title"] = $"プロジェクト詳細 - {Model.Name}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">プロジェクト一覧</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@Model.Name</h2>
+    <div>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> 編集
+            </a>
+        }
+        @if (Model.CurrentUserRole == AzureDocGen.Data.Enums.ProjectRoleType.ProjectOwner)
+        {
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> 削除
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- プロジェクト情報 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">プロジェクト情報</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+                <dl class="row">
+                    <dt class="col-sm-3">作成日</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                    
+                    <dt class="col-sm-3">作成者</dt>
+                    <dd class="col-sm-9">@Model.CreatedBy</dd>
+                    
+                    <dt class="col-sm-3">あなたの権限</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.CurrentUserRole.HasValue)
+                        {
+                            <span class="badge bg-primary">@GetRoleDisplayName(Model.CurrentUserRole.Value)</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">権限なし</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- 環境一覧 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">環境</h5>
+                @if (Model.CanEdit)
+                {
+                    <a asp-controller="Environment" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus"></i> 環境追加
+                    </a>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.Environments.Any())
+                {
+                    <div class="row">
+                        @foreach (var env in Model.Environments.OrderBy(e => e.DisplayOrder))
+                        {
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-start border-primary border-3">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="card-title mb-1">@env.Name</h6>
+                                                @if (!string.IsNullOrWhiteSpace(env.Description))
+                                                {
+                                                    <p class="card-text text-muted small mb-2">@env.Description</p>
+                                                }
+                                                <p class="card-text mb-2">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-file-earmark-text"></i> @env.DesignDocumentCount 件の設計書
+                                                    </small>
+                                                </p>
+                                                <p class="card-text">
+                                                    <small class="text-muted">
+                                                        作成: @env.CreatedAt.ToString("yyyy/MM/dd")
+                                                    </small>
+                                                </p>
+                                            </div>
+                                            <div class="btn-group-vertical btn-group-sm" role="group">
+                                                <a asp-controller="Environment" asp-action="Details" asp-route-id="@env.Id" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                @if (env.CanEdit)
+                                                {
+                                                    <a asp-controller="Environment" asp-action="Edit" asp-route-id="@env.Id" 
+                                                       class="btn btn-outline-secondary btn-sm">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-layers fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">環境がまだ定義されていません。</p>
+                        @if (Model.CanEdit)
+                        {
+                            <a asp-controller="Environment" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> 最初の環境を作成
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- メンバー一覧 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">メンバー</h5>
+                @if (Model.CanEdit)
+                {
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+                        <i class="bi bi-person-plus"></i> 追加
+                    </button>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.Members.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var member in Model.Members)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-bold">@member.Name</div>
+                                    <small class="text-muted">@member.Email</small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-secondary">@GetRoleDisplayName(member.RoleType)</span>
+                                    @if (Model.CanEdit && member.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                    {
+                                        <form asp-action="RemoveMember" method="post" class="d-inline">
+                                            <input type="hidden" name="projectId" value="@Model.Id" />
+                                            <input type="hidden" name="userId" value="@member.UserId" />
+                                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" 
+                                                    onclick="return confirm('@member.Email をプロジェクトから削除しますか？')">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">メンバーがいません。</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- メンバー追加モーダル -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddMember" method="post">
+                <input type="hidden" name="projectId" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">メンバー追加</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="userEmail" class="form-label">メールアドレス</label>
+                        <input type="email" class="form-control" id="userEmail" name="userEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roleType" class="form-label">権限</label>
+                        <select class="form-select" id="roleType" name="roleType" required>
+                            <option value="@AzureDocGen.Data.Enums.ProjectRoleType.ProjectManager">プロジェクト管理者</option>
+                            <option value="@AzureDocGen.Data.Enums.ProjectRoleType.ProjectReviewer">レビューアー</option>
+                            <option value="@AzureDocGen.Data.Enums.ProjectRoleType.ProjectDeveloper" selected>開発者</option>
+                            <option value="@AzureDocGen.Data.Enums.ProjectRoleType.ProjectViewer">閲覧者</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 環境追加モーダル -->
+<div class="modal fade" id="addEnvironmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="AddEnvironment" method="post">
+                <input type="hidden" name="projectId" value="@Model.Id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">環境追加</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="environmentName" class="form-label">環境名</label>
+                        <input type="text" class="form-control" id="environmentName" name="environmentName" required>
+                        <div class="form-text">例：開発、検証、本番、DR環境など</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 削除確認モーダル -->
+@if (Model.CurrentUserRole == AzureDocGen.Data.Enums.ProjectRoleType.ProjectOwner)
+{
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">プロジェクト削除の確認</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            プロジェクト「@Model.Name」を削除しますか？この操作は取り消せません。
+                        </div>
+                        <p>以下のデータもすべて削除されます：</p>
+                        <ul>
+                            <li>すべての環境とリソース</li>
+                            <li>すべての設計書とテンプレート</li>
+                            <li>すべてのメンバー権限</li>
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@functions {
+    private string GetRoleDisplayName(AzureDocGen.Data.Enums.ProjectRoleType roleType)
+    {
+        return roleType switch
+        {
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectOwner => "プロジェクトオーナー",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectManager => "プロジェクト管理者",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectReviewer => "レビューアー",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectDeveloper => "開発者",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectViewer => "閲覧者",
+            _ => roleType.ToString()
+        };
+    }
+}

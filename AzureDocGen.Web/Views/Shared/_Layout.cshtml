@@ -1,3 +1,6 @@
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -29,10 +32,32 @@
             <div class="container">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">AzureDocGen</a>
                 
-                <div class="navbar-nav ms-auto">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Project" asp-action="Index">
+                                    <i class="bi bi-folder"></i> プロジェクト
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Template" asp-action="Index">
+                                    <i class="bi bi-file-earmark-template"></i> テンプレート
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                    
+                    <div class="navbar-nav">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        @if (User.IsInRole("Administrator"))
+                        @* 管理者リンクはシステム管理者権限を持つユーザーのみに表示 *@
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireSystemAdministrator")).Succeeded)
                         {
                             <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-light btn-sm me-2">
                                 <i class="bi bi-gear"></i> 管理者
@@ -64,6 +89,7 @@
                         <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-sm me-2">ログイン</a>
                         <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-sm">新規登録</a>
                     }
+                    </div>
                 </div>
             </div>
         </nav>

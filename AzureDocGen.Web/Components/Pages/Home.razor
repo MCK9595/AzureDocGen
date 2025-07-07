@@ -1,7 +1,117 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Azure インフラ詳細設計書作成ツール</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="hero-section bg-primary text-white py-5 mb-5 rounded">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold mb-3">Azure インフラ詳細設計書作成ツール</h1>
+                <p class="lead">Azureインフラの設計書を効率的に作成・管理できるWebアプリケーション</p>
+                <div class="mt-4">
+                    <a href="/Project" class="btn btn-light btn-lg me-3">
+                        <i class="bi bi-folder-plus"></i> プロジェクトを始める
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-info-circle"></i> 機能を見る
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-Welcome to your new app.
+<div id="features" class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-diagram-3-fill text-primary" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">ビジュアル設計</h5>
+                <p class="card-text">ドラッグ&ドロップでAzureリソースを配置し、直感的にインフラ構成図を作成できます。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-people-fill text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">チーム協働</h5>
+                <p class="card-text">プロジェクトベースでメンバーを管理し、役割に応じた権限でセキュアに協働できます。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <i class="bi bi-file-earmark-text-fill text-info" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="card-title">多形式出力</h5>
+                <p class="card-text">Excel、PDF、Markdown形式で設計書を出力。構成図も自動で組み込まれます。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-rocket-takeoff"></i> はじめかた</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>新しいプロジェクトを作成</li>
+                    <li>チームメンバーを招待</li>
+                    <li>テンプレートを選択または独自作成</li>
+                    <li>ビジュアルデザイナーで設計</li>
+                    <li>レビュー・承認プロセスを実行</li>
+                    <li>設計書をエクスポート</li>
+                </ol>
+                <a href="/Project/Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> 新規プロジェクト作成
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-star-fill"></i> 主な機能</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>プロジェクト・環境管理</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>テンプレート機能</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>ビジュアル設計エディター</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>レビューワークフロー</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>権限管理</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>命名規則管理</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+    }
+    
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>

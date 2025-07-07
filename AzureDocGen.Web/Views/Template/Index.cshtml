@@ -1,0 +1,231 @@
+@model AzureDocGen.Web.Models.TemplateIndexViewModel
+@{
+    ViewData["Title"] = "テンプレート管理";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@ViewData["Title"]</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 新規テンプレート作成
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- 統計情報 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Statistics.TotalTemplates</h5>
+                <p class="card-text">総テンプレート数</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Statistics.PrivateTemplates</h5>
+                <p class="card-text">プライベート</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Statistics.ProjectTemplates</h5>
+                <p class="card-text">プロジェクト共有</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">@Model.Statistics.GlobalTemplates</h5>
+                <p class="card-text">グローバル共有</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- カテゴリーフィルター -->
+<div class="mb-4">
+    <div class="btn-group" role="group">
+        <a asp-action="Index" class="btn @(string.IsNullOrEmpty(Model.CurrentCategory) ? "btn-primary" : "btn-outline-primary")">
+            すべて
+        </a>
+        <a asp-action="Index" asp-route-category="private" class="btn @(Model.CurrentCategory == "private" ? "btn-primary" : "btn-outline-primary")">
+            プライベート
+        </a>
+        <a asp-action="Index" asp-route-category="project" class="btn @(Model.CurrentCategory == "project" ? "btn-primary" : "btn-outline-primary")">
+            プロジェクト共有
+        </a>
+        <a asp-action="Index" asp-route-category="global" class="btn @(Model.CurrentCategory == "global" ? "btn-primary" : "btn-outline-primary")">
+            グローバル共有
+        </a>
+        <a asp-action="Index" asp-route-category="recent" class="btn @(Model.CurrentCategory == "recent" ? "btn-primary" : "btn-outline-primary")">
+            最近作成
+        </a>
+    </div>
+</div>
+
+@if (!Model.Templates.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> 
+        @if (string.IsNullOrEmpty(Model.CurrentCategory))
+        {
+            <text>テンプレートがありません。新規テンプレートを作成してください。</text>
+        }
+        else
+        {
+            <text>このカテゴリーにはテンプレートがありません。</text>
+        }
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var template in Model.Templates)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">
+                                <a asp-action="Details" asp-route-id="@template.Id" class="text-decoration-none">
+                                    @template.Name
+                                </a>
+                            </h5>
+                            <span class="badge @GetSharingLevelBadgeClass(template.SharingLevel)">
+                                @GetSharingLevelDisplayName(template.SharingLevel)
+                            </span>
+                        </div>
+                        
+                        @if (!string.IsNullOrWhiteSpace(template.Description))
+                        {
+                            <p class="card-text text-muted small">@template.Description</p>
+                        }
+                        
+                        <div class="small text-muted mb-3">
+                            <div><i class="bi bi-calendar"></i> 作成日: @template.CreatedAt.ToString("yyyy/MM/dd")</div>
+                            <div><i class="bi bi-person"></i> 作成者: @template.CreatedBy</div>
+                            <div><i class="bi bi-sliders"></i> パラメーター: @template.ParameterCount 個</div>
+                            <div><i class="bi bi-layers"></i> バージョン: @template.Version</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                @if (template.IsOwner)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-person-check"></i> 所有者
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a asp-action="Details" asp-route-id="@template.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> 詳細
+                        </a>
+                        @if (template.IsOwner)
+                        {
+                            <a asp-action="Edit" asp-route-id="@template.Id" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i> 編集
+                            </a>
+                        }
+                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                data-bs-toggle="modal" data-bs-target="#duplicateModal" 
+                                data-template-id="@template.Id" data-template-name="@template.Name">
+                            <i class="bi bi-files"></i> 複製
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- 複製モーダル -->
+<div class="modal fade" id="duplicateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Duplicate" method="post">
+                <input type="hidden" id="duplicateTemplateId" name="id" />
+                <div class="modal-header">
+                    <h5 class="modal-title">テンプレートの複製</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newName" class="form-label">新しいテンプレート名</label>
+                        <input type="text" class="form-control" id="newName" name="newName" required>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        複製されたテンプレートはプライベートとして作成されます。
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">複製</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetSharingLevelDisplayName(AzureDocGen.Data.Entities.SharingLevel sharingLevel)
+    {
+        return sharingLevel switch
+        {
+            AzureDocGen.Data.Entities.SharingLevel.Private => "プライベート",
+            AzureDocGen.Data.Entities.SharingLevel.Project => "プロジェクト",
+            AzureDocGen.Data.Entities.SharingLevel.Global => "グローバル",
+            _ => sharingLevel.ToString()
+        };
+    }
+    
+    private string GetSharingLevelBadgeClass(AzureDocGen.Data.Entities.SharingLevel sharingLevel)
+    {
+        return sharingLevel switch
+        {
+            AzureDocGen.Data.Entities.SharingLevel.Private => "bg-secondary",
+            AzureDocGen.Data.Entities.SharingLevel.Project => "bg-info",
+            AzureDocGen.Data.Entities.SharingLevel.Global => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const duplicateModal = document.getElementById('duplicateModal');
+            duplicateModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const templateId = button.getAttribute('data-template-id');
+                const templateName = button.getAttribute('data-template-name');
+                
+                document.getElementById('duplicateTemplateId').value = templateId;
+                document.getElementById('newName').value = templateName + ' (コピー)';
+            });
+        });
+    </script>
+}

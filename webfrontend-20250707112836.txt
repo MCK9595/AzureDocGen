@@ -1,0 +1,416 @@
+2025-07-07T14:26:58.2894190Z Waiting for resource 'apiservice' to enter the 'Running' state.
+2025-07-07T14:26:58.2894380Z Waiting for resource 'migrations' to enter the 'Running' state.
+2025-07-07T14:27:17.9876640Z Waiting for resource ready to execute for 'migrations'.
+2025-07-07T14:27:17.9880520Z Finished waiting for resource 'migrations'.
+2025-07-07T14:27:18.0044800Z Waiting for resource ready to execute for 'apiservice'.
+2025-07-07T14:27:18.0045300Z Finished waiting for resource 'apiservice'.
+2025-07-07T14:27:18.6660000Z info: Microsoft.Hosting.Lifetime[14]
+2025-07-07T14:27:18.6660000Z       Now listening on: https://localhost:55965
+2025-07-07T14:27:18.6680000Z info: Microsoft.Hosting.Lifetime[14]
+2025-07-07T14:27:18.6680000Z       Now listening on: http://localhost:55966
+2025-07-07T14:27:18.6680000Z info: Microsoft.Hosting.Lifetime[0]
+2025-07-07T14:27:18.6680000Z       Application started. Press Ctrl+C to shut down.
+2025-07-07T14:27:18.6690000Z info: Microsoft.Hosting.Lifetime[0]
+2025-07-07T14:27:18.6690000Z       Hosting environment: Development
+2025-07-07T14:27:18.6690000Z info: Microsoft.Hosting.Lifetime[0]
+2025-07-07T14:27:18.6690000Z       Content root path: /Users/sakamakiyoshiki/src/dotnetProject/AzureDocGen/AzureDocGen.Web
+2025-07-07T14:27:36.7600000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:36.7600000Z       Executed DbCommand (58ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:36.7600000Z       SELECT CASE
+2025-07-07T14:27:36.7600000Z           WHEN EXISTS (
+2025-07-07T14:27:36.7600000Z               SELECT 1
+2025-07-07T14:27:36.7600000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:36.7600000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:36.7600000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:36.7600000Z       END
+2025-07-07T14:27:39.9280000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:39.9280000Z       Executed DbCommand (6ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:39.9280000Z       SELECT CASE
+2025-07-07T14:27:39.9280000Z           WHEN EXISTS (
+2025-07-07T14:27:39.9280000Z               SELECT 1
+2025-07-07T14:27:39.9280000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:39.9280000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:39.9280000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:39.9280000Z       END
+2025-07-07T14:27:40.0160000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0160000Z       Executed DbCommand (32ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0160000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0160000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0160000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0160000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0160000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.0160000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.0350000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0350000Z       Executed DbCommand (7ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0350000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0350000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0350000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0350000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0350000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.0350000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.0370000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0370000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0370000Z       SELECT CASE
+2025-07-07T14:27:40.0370000Z           WHEN EXISTS (
+2025-07-07T14:27:40.0370000Z               SELECT 1
+2025-07-07T14:27:40.0370000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.0370000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.0370000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.0370000Z       END
+2025-07-07T14:27:40.0380000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0380000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0380000Z       SELECT CASE
+2025-07-07T14:27:40.0380000Z           WHEN EXISTS (
+2025-07-07T14:27:40.0380000Z               SELECT 1
+2025-07-07T14:27:40.0380000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.0380000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.0380000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.0380000Z       END
+2025-07-07T14:27:40.0580000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0580000Z       Executed DbCommand (12ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0580000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.0580000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.0580000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.0740000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0740000Z       Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0740000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0740000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0740000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0740000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0740000Z       WHERE 0 = 1
+2025-07-07T14:27:40.0740000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.0760000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0760000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0760000Z       SELECT CASE
+2025-07-07T14:27:40.0760000Z           WHEN EXISTS (
+2025-07-07T14:27:40.0760000Z               SELECT 1
+2025-07-07T14:27:40.0760000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.0760000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.0760000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.0760000Z       END
+2025-07-07T14:27:40.0760000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0760000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0760000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0760000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0760000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0760000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0760000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.0760000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.0770000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0770000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0770000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0770000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0770000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0770000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0770000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.0770000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.0780000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0780000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0780000Z       SELECT CASE
+2025-07-07T14:27:40.0780000Z           WHEN EXISTS (
+2025-07-07T14:27:40.0780000Z               SELECT 1
+2025-07-07T14:27:40.0780000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.0780000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.0780000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.0780000Z       END
+2025-07-07T14:27:40.0790000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0790000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0790000Z       SELECT CASE
+2025-07-07T14:27:40.0790000Z           WHEN EXISTS (
+2025-07-07T14:27:40.0790000Z               SELECT 1
+2025-07-07T14:27:40.0790000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.0790000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.0790000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.0790000Z       END
+2025-07-07T14:27:40.0790000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0790000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0790000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.0790000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.0790000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.0800000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.0800000Z       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.0800000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.0800000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.0800000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.0800000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.0800000Z       WHERE 0 = 1
+2025-07-07T14:27:40.0800000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2290000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2290000Z       Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2290000Z       SELECT CASE
+2025-07-07T14:27:40.2290000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2290000Z               SELECT 1
+2025-07-07T14:27:40.2290000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2290000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2290000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2290000Z       END
+2025-07-07T14:27:40.2310000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2310000Z       Executed DbCommand (2ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2310000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2310000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2310000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2310000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2310000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.2310000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2320000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2320000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2320000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2320000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2320000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2320000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2320000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.2320000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2330000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2330000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2330000Z       SELECT CASE
+2025-07-07T14:27:40.2330000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2330000Z               SELECT 1
+2025-07-07T14:27:40.2330000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2330000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2330000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2330000Z       END
+2025-07-07T14:27:40.2350000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2350000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2350000Z       SELECT CASE
+2025-07-07T14:27:40.2350000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2350000Z               SELECT 1
+2025-07-07T14:27:40.2350000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2350000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2350000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2350000Z       END
+2025-07-07T14:27:40.2360000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2360000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2360000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.2360000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.2360000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.2380000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2380000Z       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2380000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2380000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2380000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2380000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2380000Z       WHERE 0 = 1
+2025-07-07T14:27:40.2380000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2390000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2390000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2390000Z       SELECT CASE
+2025-07-07T14:27:40.2390000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2390000Z               SELECT 1
+2025-07-07T14:27:40.2390000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2390000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2390000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2390000Z       END
+2025-07-07T14:27:40.2400000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2400000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2400000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2400000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2400000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2400000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2400000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.2400000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2420000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2420000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2420000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2420000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2420000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2420000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2420000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.2420000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.2430000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2430000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2430000Z       SELECT CASE
+2025-07-07T14:27:40.2430000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2430000Z               SELECT 1
+2025-07-07T14:27:40.2430000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2430000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2430000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2430000Z       END
+2025-07-07T14:27:40.2440000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2440000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2440000Z       SELECT CASE
+2025-07-07T14:27:40.2440000Z           WHEN EXISTS (
+2025-07-07T14:27:40.2440000Z               SELECT 1
+2025-07-07T14:27:40.2440000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.2440000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.2440000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.2440000Z       END
+2025-07-07T14:27:40.2460000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2460000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2460000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.2460000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.2460000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.2470000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.2470000Z       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.2470000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.2470000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.2470000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.2470000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.2470000Z       WHERE 0 = 1
+2025-07-07T14:27:40.2470000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9440000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9440000Z       Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9440000Z       SELECT CASE
+2025-07-07T14:27:40.9440000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9440000Z               SELECT 1
+2025-07-07T14:27:40.9440000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9440000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9440000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9440000Z       END
+2025-07-07T14:27:40.9460000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9460000Z       Executed DbCommand (2ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9460000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9460000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9460000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9460000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9460000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.9460000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9470000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9470000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9470000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9470000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9470000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9470000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9470000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.9470000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9490000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9490000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9490000Z       SELECT CASE
+2025-07-07T14:27:40.9490000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9490000Z               SELECT 1
+2025-07-07T14:27:40.9490000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9490000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9490000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9490000Z       END
+2025-07-07T14:27:40.9500000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9500000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9500000Z       SELECT CASE
+2025-07-07T14:27:40.9500000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9500000Z               SELECT 1
+2025-07-07T14:27:40.9500000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9500000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9500000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9500000Z       END
+2025-07-07T14:27:40.9510000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9510000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9510000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.9510000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.9510000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.9530000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9530000Z       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9530000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9530000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9530000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9530000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9530000Z       WHERE 0 = 1
+2025-07-07T14:27:40.9530000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9540000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9540000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9540000Z       SELECT CASE
+2025-07-07T14:27:40.9540000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9540000Z               SELECT 1
+2025-07-07T14:27:40.9540000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9540000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9540000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9540000Z       END
+2025-07-07T14:27:40.9560000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9560000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9560000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9560000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9560000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9560000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9560000Z       WHERE [t].[CreatedBy] = @__userId_0
+2025-07-07T14:27:40.9560000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9570000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9570000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9570000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9570000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9570000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9570000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9570000Z       WHERE [t].[SharingLevel] = 2 AND [t].[CreatedBy] <> @__userId_0
+2025-07-07T14:27:40.9570000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:40.9580000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9580000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9580000Z       SELECT CASE
+2025-07-07T14:27:40.9580000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9580000Z               SELECT 1
+2025-07-07T14:27:40.9580000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9580000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9580000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9580000Z       END
+2025-07-07T14:27:40.9600000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9600000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9600000Z       SELECT CASE
+2025-07-07T14:27:40.9600000Z           WHEN EXISTS (
+2025-07-07T14:27:40.9600000Z               SELECT 1
+2025-07-07T14:27:40.9600000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:40.9600000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:40.9600000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:40.9600000Z       END
+2025-07-07T14:27:40.9610000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9610000Z       Executed DbCommand (1ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9610000Z       SELECT DISTINCT [p].[ProjectId]
+2025-07-07T14:27:40.9610000Z       FROM [ProjectUserRoles] AS [p]
+2025-07-07T14:27:40.9610000Z       WHERE [p].[UserId] = @__userId_0 AND [p].[IsActive] = CAST(1 AS bit) AND ([p].[ExpiresAt] IS NULL OR [p].[ExpiresAt] > GETUTCDATE())
+2025-07-07T14:27:40.9620000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:40.9620000Z       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:40.9620000Z       SELECT [t].[Id], [t].[CreatedAt], [t].[CreatedBy], [t].[Description], [t].[Name], [t].[SharingLevel], [t].[StructureJson], [t].[Version], [a].[Id], [t0].[Id], [t0].[DefaultValue], [t0].[Description], [t0].[DisplayName], [t0].[IsRequired], [t0].[Name], [t0].[Order], [t0].[TemplateId], [t0].[Type], [t0].[ValidationRule], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName]
+2025-07-07T14:27:40.9620000Z       FROM [Templates] AS [t]
+2025-07-07T14:27:40.9620000Z       INNER JOIN [AspNetUsers] AS [a] ON [t].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:40.9620000Z       LEFT JOIN [TemplateParameters] AS [t0] ON [t].[Id] = [t0].[TemplateId]
+2025-07-07T14:27:40.9620000Z       WHERE 0 = 1
+2025-07-07T14:27:40.9620000Z       ORDER BY [t].[Id], [a].[Id]
+2025-07-07T14:27:42.2850000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:42.2850000Z       Executed DbCommand (4ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:42.2850000Z       SELECT CASE
+2025-07-07T14:27:42.2850000Z           WHEN EXISTS (
+2025-07-07T14:27:42.2850000Z               SELECT 1
+2025-07-07T14:27:42.2850000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:42.2850000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:42.2850000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:42.2850000Z       END
+2025-07-07T14:27:42.2890000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:42.2890000Z       Executed DbCommand (2ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:42.2890000Z       SELECT CASE
+2025-07-07T14:27:42.2890000Z           WHEN EXISTS (
+2025-07-07T14:27:42.2890000Z               SELECT 1
+2025-07-07T14:27:42.2890000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:42.2890000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:42.2890000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:42.2890000Z       END
+2025-07-07T14:27:42.3390000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:42.3390000Z       Executed DbCommand (34ms) [Parameters=[@__userId_0='?' (Size = 450)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:42.3390000Z       SELECT COUNT(*)
+2025-07-07T14:27:42.3390000Z       FROM [Projects] AS [p]
+2025-07-07T14:27:42.3390000Z       WHERE EXISTS (
+2025-07-07T14:27:42.3390000Z           SELECT 1
+2025-07-07T14:27:42.3390000Z           FROM [ProjectUserRoles] AS [p0]
+2025-07-07T14:27:42.3390000Z           WHERE [p].[Id] = [p0].[ProjectId] AND [p0].[UserId] = @__userId_0 AND [p0].[IsActive] = CAST(1 AS bit) AND ([p0].[ExpiresAt] IS NULL OR [p0].[ExpiresAt] > GETUTCDATE()))
+2025-07-07T14:27:42.4050000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:42.4050000Z       Executed DbCommand (31ms) [Parameters=[@__userId_0='?' (Size = 450), @__p_1='?' (DbType = Int32), @__p_2='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:42.4050000Z       SELECT [p1].[Id], [p1].[CreatedAt], [p1].[CreatedBy], [p1].[Description], [p1].[Name], [a].[Id], [a].[AccessFailedCount], [a].[ConcurrencyStamp], [a].[CreatedAt], [a].[Department], [a].[Email], [a].[EmailConfirmed], [a].[FirstName], [a].[IsActive], [a].[LastLoginAt], [a].[LastName], [a].[LockoutEnabled], [a].[LockoutEnd], [a].[NormalizedEmail], [a].[NormalizedUserName], [a].[PasswordHash], [a].[PhoneNumber], [a].[PhoneNumberConfirmed], [a].[SecurityStamp], [a].[TwoFactorEnabled], [a].[UserName], [s].[Id], [s].[ExpiresAt], [s].[GrantedAt], [s].[GrantedBy], [s].[IsActive], [s].[ProjectId], [s].[RoleType], [s].[UserId], [s].[Id0], [s].[AccessFailedCount], [s].[ConcurrencyStamp], [s].[CreatedAt], [s].[Department], [s].[Email], [s].[EmailConfirmed], [s].[FirstName], [s].[IsActive0], [s].[LastLoginAt], [s].[LastName], [s].[LockoutEnabled], [s].[LockoutEnd], [s].[NormalizedEmail], [s].[NormalizedUserName], [s].[PasswordHash], [s].[PhoneNumber], [s].[PhoneNumberConfirmed], [s].[SecurityStamp], [s].[TwoFactorEnabled], [s].[UserName]
+2025-07-07T14:27:42.4050000Z       FROM (
+2025-07-07T14:27:42.4050000Z           SELECT [p].[Id], [p].[CreatedAt], [p].[CreatedBy], [p].[Description], [p].[Name]
+2025-07-07T14:27:42.4050000Z           FROM [Projects] AS [p]
+2025-07-07T14:27:42.4050000Z           WHERE EXISTS (
+2025-07-07T14:27:42.4050000Z               SELECT 1
+2025-07-07T14:27:42.4050000Z               FROM [ProjectUserRoles] AS [p0]
+2025-07-07T14:27:42.4050000Z               WHERE [p].[Id] = [p0].[ProjectId] AND [p0].[UserId] = @__userId_0 AND [p0].[IsActive] = CAST(1 AS bit) AND ([p0].[ExpiresAt] IS NULL OR [p0].[ExpiresAt] > GETUTCDATE()))
+2025-07-07T14:27:42.4050000Z           ORDER BY [p].[CreatedAt] DESC
+2025-07-07T14:27:42.4050000Z           OFFSET @__p_1 ROWS FETCH NEXT @__p_2 ROWS ONLY
+2025-07-07T14:27:42.4050000Z       ) AS [p1]
+2025-07-07T14:27:42.4050000Z       INNER JOIN [AspNetUsers] AS [a] ON [p1].[CreatedBy] = [a].[Id]
+2025-07-07T14:27:42.4050000Z       LEFT JOIN (
+2025-07-07T14:27:42.4050000Z           SELECT [p2].[Id], [p2].[ExpiresAt], [p2].[GrantedAt], [p2].[GrantedBy], [p2].[IsActive], [p2].[ProjectId], [p2].[RoleType], [p2].[UserId], [a0].[Id] AS [Id0], [a0].[AccessFailedCount], [a0].[ConcurrencyStamp], [a0].[CreatedAt], [a0].[Department], [a0].[Email], [a0].[EmailConfirmed], [a0].[FirstName], [a0].[IsActive] AS [IsActive0], [a0].[LastLoginAt], [a0].[LastName], [a0].[LockoutEnabled], [a0].[LockoutEnd], [a0].[NormalizedEmail], [a0].[NormalizedUserName], [a0].[PasswordHash], [a0].[PhoneNumber], [a0].[PhoneNumberConfirmed], [a0].[SecurityStamp], [a0].[TwoFactorEnabled], [a0].[UserName]
+2025-07-07T14:27:42.4050000Z           FROM [ProjectUserRoles] AS [p2]
+2025-07-07T14:27:42.4050000Z           INNER JOIN [AspNetUsers] AS [a0] ON [p2].[UserId] = [a0].[Id]
+2025-07-07T14:27:42.4050000Z       ) AS [s] ON [p1].[Id] = [s].[ProjectId]
+2025-07-07T14:27:42.4050000Z       ORDER BY [p1].[CreatedAt] DESC, [p1].[Id], [a].[Id], [s].[Id]
+2025-07-07T14:27:44.8160000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+2025-07-07T14:27:44.8160000Z       Executed DbCommand (5ms) [Parameters=[@__userId_0='?' (Size = 450), @__roleType_1='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+2025-07-07T14:27:44.8160000Z       SELECT CASE
+2025-07-07T14:27:44.8160000Z           WHEN EXISTS (
+2025-07-07T14:27:44.8160000Z               SELECT 1
+2025-07-07T14:27:44.8160000Z               FROM [SystemRoles] AS [s]
+2025-07-07T14:27:44.8160000Z               WHERE [s].[UserId] = @__userId_0 AND [s].[RoleType] = @__roleType_1 AND [s].[IsActive] = CAST(1 AS bit)) THEN CAST(1 AS bit)
+2025-07-07T14:27:44.8160000Z           ELSE CAST(0 AS bit)
+2025-07-07T14:27:44.8160000Z       END

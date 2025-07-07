@@ -132,6 +132,15 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 // レビューワークフローサービス
 builder.Services.AddScoped<IReviewWorkflowService, ReviewWorkflowService>();
 
+// プロジェクト管理サービス
+builder.Services.AddScoped<IProjectService, ProjectService>();
+
+// テンプレート管理サービス
+builder.Services.AddScoped<ITemplateService, TemplateService>();
+
+// 環境管理サービス
+builder.Services.AddScoped<IEnvironmentService, EnvironmentService>();
+
 // 認可ハンドラー
 builder.Services.AddScoped<IAuthorizationHandler, SystemAdministratorRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectAccessRequirementHandler>();
@@ -150,6 +159,9 @@ builder.Logging.AddConsole();
 if (builder.Environment.IsDevelopment())
 {
     builder.Logging.SetMinimumLevel(LogLevel.Debug);
+    // 認可関連のログを詳細に出力
+    builder.Logging.AddFilter("AzureDocGen.Web.Authorization", LogLevel.Debug);
+    builder.Logging.AddFilter("Microsoft.AspNetCore.Authorization", LogLevel.Debug);
 }
 
 var app = builder.Build();

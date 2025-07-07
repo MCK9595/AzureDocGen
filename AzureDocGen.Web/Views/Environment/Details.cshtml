@@ -1,0 +1,212 @@
+@model AzureDocGen.Web.Models.EnvironmentDetailsViewModel
+@{
+    ViewData["Title"] = $"環境詳細 - {Model.Name}";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">プロジェクト一覧</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectId">@Model.ProjectName</a></li>
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>@Model.Name</h2>
+        <p class="text-muted">@Model.ProjectName プロジェクトの環境</p>
+    </div>
+    <div>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> 編集
+            </a>
+        }
+        @if (Model.CanDelete)
+        {
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash"></i> 削除
+            </button>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- 環境情報 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">環境情報</h5>
+            </div>
+            <div class="card-body">
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+                <dl class="row">
+                    <dt class="col-sm-3">作成日</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                    
+                    <dt class="col-sm-3">作成者</dt>
+                    <dd class="col-sm-9">@Model.CreatedBy</dd>
+                    
+                    <dt class="col-sm-3">表示順序</dt>
+                    <dd class="col-sm-9">@Model.DisplayOrder</dd>
+                    
+                    <dt class="col-sm-3">設計書数</dt>
+                    <dd class="col-sm-9">@Model.DesignDocuments.Count 件</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- 設計書一覧 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">設計書一覧</h5>
+                <button type="button" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus"></i> 設計書作成
+                </button>
+            </div>
+            <div class="card-body">
+                @if (Model.DesignDocuments.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>設計書名</th>
+                                    <th>ステータス</th>
+                                    <th>最終更新日</th>
+                                    <th>最終更新者</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var doc in Model.DesignDocuments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <a href="#" class="text-decoration-none">@doc.Name</a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@doc.Status</span>
+                                        </td>
+                                        <td>@doc.LastModified.ToString("yyyy/MM/dd HH:mm")</td>
+                                        <td>@doc.LastModifiedBy</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-text fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">この環境にはまだ設計書がありません。</p>
+                        <button type="button" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> 最初の設計書を作成
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- 環境統計 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">環境統計</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">@Model.DesignDocuments.Count</h4>
+                        <small class="text-muted">設計書数</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">0</h4>
+                        <small class="text-muted">承認済み</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-warning">0</h4>
+                        <small class="text-muted">レビュー中</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-info">0</h4>
+                        <small class="text-muted">下書き</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 削除確認モーダル -->
+@if (Model.CanDelete)
+{
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">環境削除の確認</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            環境「@Model.Name」を削除しますか？この操作は取り消せません。
+                        </div>
+                        @if (Model.HasDesignDocuments)
+                        {
+                            <div class="alert alert-warning">
+                                <i class="bi bi-info-circle"></i> 
+                                この環境には設計書が含まれているため削除できません。先に設計書を削除または移動してください。
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        @if (!Model.HasDesignDocuments)
+                        {
+                            <button type="submit" class="btn btn-danger">削除する</button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -90,3 +90,28 @@ This application implements an Azure infrastructure design document creation too
 4. **Database Initialization**: Database creation and migrations are handled automatically by the Migration Service on startup. Do not run migrations manually from Web project.
 5. **Service Dependencies**: Migration Service runs first, then API and Web services wait for migrations to complete.
 6. **Secret Management**: Use Secret Manager for development, Azure Key Vault for production (as specified in authentication-design.md).
+
+## Implementation Progress
+
+実装計画と進捗状況は以下のファイルで管理しています：
+- **詳細計画**: `/docs/implementation-plan.md` - フェーズごとの詳細な実装計画と技術アプローチ
+- **ToDoリスト**: `/docs/implementation-todo.md` - チェックボックス形式の詳細タスクリスト
+
+### 完了したタスク
+- [x] 認証・認可システム実装（ASP.NET Core Identity + 階層的権限管理）
+- [x] 基本データモデル実装（全エンティティクラス）
+- [x] 権限管理サービス実装（PermissionService, ReviewWorkflowService）
+- [x] 管理機能（AdminController）実装
+- [x] Aspire統合（AppHost, ServiceDefaults, MigrationService）
+
+### 実装フェーズ概要
+1. **Phase 1**: コア機能基盤（プロジェクト管理、テンプレート管理）- 2-3週間
+2. **Phase 2**: ビジュアル設計機能（ドラッグ&ドロップ設計）- 4-6週間
+3. **Phase 3**: ワークフロー・出力機能（レビュー、Excel/PDF出力）- 3-4週間
+4. **Phase 4**: 管理・運用機能（命名規則、監査）- 2-3週間
+
+### 実装時の注意事項
+1. タスク完了時は `/docs/implementation-todo.md` のチェックボックスをチェック
+2. 大きな機能完了時は CLAUDE.md の完了リストも更新
+3. 新たな技術的決定事項は `/docs/implementation-plan.md` に追記
+4. 実装前に該当セクションの要件定義書・設計書を確認

@@ -57,18 +57,52 @@ public class Worker : BackgroundService
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>
         {
-            // Ensure the database is created
-            await dbContext.Database.EnsureCreatedAsync(cancellationToken);
-            
-            // Apply any pending migrations
-            if ((await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).Any())
+            try
             {
-                _logger.LogInformation("Applying pending migrations");
-                await dbContext.Database.MigrateAsync(cancellationToken);
+                // Check if database exists and if we need to recreate it
+                var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+                
+                if (canConnect)
+                {
+                    // Check for migration conflicts by comparing applied vs available migrations
+                    var appliedMigrations = await dbContext.Database.GetAppliedMigrationsAsync(cancellationToken);
+                    var allMigrations = dbContext.Database.GetMigrations();
+                    
+                    // If there are applied migrations not in current migration list, we need to recreate
+                    var obsoleteMigrations = appliedMigrations.Except(allMigrations);
+                    
+                    if (obsoleteMigrations.Any())
+                    {
+                        _logger.LogWarning("Found obsolete migrations in database: {ObsoleteMigrations}. Recreating database.", 
+                            string.Join(", ", obsoleteMigrations));
+                        
+                        await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+                        _logger.LogInformation("Database deleted due to migration conflicts");
+                    }
+                }
+                
+                // Apply migrations (this will create the database if it doesn't exist)
+                _logger.LogInformation("Checking for pending migrations");
+                var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
+                
+                if (pendingMigrations.Any())
+                {
+                    _logger.LogInformation("Applying {Count} pending migrations: {Migrations}", 
+                        pendingMigrations.Count(), string.Join(", ", pendingMigrations));
+                    await dbContext.Database.MigrateAsync(cancellationToken);
+                    _logger.LogInformation("Migrations applied successfully");
+                }
+                else
+                {
+                    _logger.LogInformation("No pending migrations found");
+                }
             }
-            else
+            catch (Exception ex) when (ex.Message.Contains("already an object named"))
             {
-                _logger.LogInformation("No pending migrations found");
+                _logger.LogWarning("Database schema conflict detected. Recreating database.");
+                await dbContext.Database.EnsureDeletedAsync(cancellationToken);
+                await dbContext.Database.MigrateAsync(cancellationToken);
+                _logger.LogInformation("Database recreated and migrations applied successfully");
             }
         });
     }
@@ -118,7 +152,16 @@ public class Worker : BackgroundService
                     
                     dbContext.SystemRoles.Add(systemRole);
                     await dbContext.SaveChangesAsync(cancellationToken);
-                    _logger.LogInformation("System administrator role added to user {Email}", adminUser.Email);
+                    
+                    _logger.LogInformation("=== SYSTEM ADMINISTRATOR ROLE ADDED ===");
+                    _logger.LogInformation("Added system administrator role to existing user:");
+                    _logger.LogInformation("  - User Email: {Email}", adminUser.Email);
+                    _logger.LogInformation("  - User ID: {UserId}", adminUser.Id);
+                    _logger.LogInformation("  - Role ID: {RoleId}", systemRole.Id);
+                    _logger.LogInformation("  - Role Type: {RoleType}", systemRole.RoleType);
+                    _logger.LogInformation("  - Granted At: {GrantedAt}", systemRole.GrantedAt);
+                    _logger.LogInformation("  - Is Active: {IsActive}", systemRole.IsActive);
+                    _logger.LogInformation("========================================");
                 }
                 else
                 {
@@ -168,7 +211,18 @@ public class Worker : BackgroundService
         dbContext.SystemRoles.Add(systemRole);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Created system administrator: {Email} with ID: {UserId}", adminUser.Email, adminUser.Id);
-        _logger.LogInformation("System administrator role created with ID: {RoleId} for user: {UserId}", systemRole.Id, systemRole.UserId);
+        _logger.LogInformation("=== SYSTEM ADMINISTRATOR CREATED ===");
+        _logger.LogInformation("Created system administrator user:");
+        _logger.LogInformation("  - Email: {Email}", adminUser.Email);
+        _logger.LogInformation("  - User ID: {UserId}", adminUser.Id);
+        _logger.LogInformation("  - Username: {UserName}", adminUser.UserName);
+        _logger.LogInformation("  - Full Name: {FirstName} {LastName}", adminUser.FirstName, adminUser.LastName);
+        _logger.LogInformation("Created system administrator role:");
+        _logger.LogInformation("  - Role ID: {RoleId}", systemRole.Id);
+        _logger.LogInformation("  - Role Type: {RoleType}", systemRole.RoleType);
+        _logger.LogInformation("  - User ID: {UserId}", systemRole.UserId);
+        _logger.LogInformation("  - Granted At: {GrantedAt}", systemRole.GrantedAt);
+        _logger.LogInformation("  - Is Active: {IsActive}", systemRole.IsActive);
+        _logger.LogInformation("=====================================");
     }
 }

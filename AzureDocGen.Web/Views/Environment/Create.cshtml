@@ -1,0 +1,84 @@
+@model AzureDocGen.Web.Models.EnvironmentCreateViewModel
+@{
+    ViewData["Title"] = "環境作成";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Index">プロジェクト一覧</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectId">@Model.ProjectName</a></li>
+        <li class="breadcrumb-item active" aria-current="page">環境作成</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">新しい環境の作成</h4>
+                <small class="text-muted">プロジェクト: @Model.ProjectName</small>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <input type="hidden" asp-for="ProjectId" />
+                    <input type="hidden" asp-for="ProjectName" />
+                    
+                    <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">環境名 <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="例: 開発環境, 検証環境, 本番環境" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <div class="form-text">
+                            環境の名前を入力してください。同じプロジェクト内で重複する名前は使用できません。
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Description" class="form-label">説明</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" 
+                                  placeholder="この環境の用途や特徴について説明してください"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>環境について</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>環境は設計書を管理するための論理的な区分です</li>
+                            <li>同じ Azure リソース構成でも、開発・検証・本番で異なる設定値を持つ場合に利用します</li>
+                            <li>作成後、この環境専用の設計書を作成できるようになります</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-controller="Project" asp-action="Details" asp-route-id="@Model.ProjectId" 
+                           class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> プロジェクトに戻る
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> 環境を作成
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // フォーカスを環境名フィールドに設定
+            $('#Name').focus();
+            
+            // エラーがある場合はアラートを表示
+            var validationSummary = $('[data-valmsg-summary="true"]');
+            if (validationSummary.find('ul li').length > 0) {
+                $('.alert-danger').show();
+            }
+        });
+    </script>
+}

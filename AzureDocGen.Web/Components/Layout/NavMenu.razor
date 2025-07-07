@@ -28,25 +28,28 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Project">
+                        <span class="bi bi-folder-fill" aria-hidden="true"></span> プロジェクト
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Template">
+                        <span class="bi bi-file-earmark-template-fill" aria-hidden="true"></span> テンプレート
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-
-        <AuthorizeView Policy="RequireSystemAdministrator">
+        <AdminCheck>
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/Admin">
                     <span class="bi bi-gear-fill" aria-hidden="true"></span> 管理者
                 </NavLink>
             </div>
-        </AuthorizeView>
+        </AdminCheck>
 
     </nav>
 </div>

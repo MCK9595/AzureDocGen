@@ -1,0 +1,280 @@
+@model AzureDocGen.Web.Models.ProjectIndexViewModel
+@{
+    ViewData["Title"] = "プロジェクト一覧";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@ViewData["Title"]</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> 新規プロジェクト作成
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- 検索・フィルターフォーム -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#searchFilter">
+                <i class="bi bi-search"></i> 検索・フィルター
+            </button>
+        </h5>
+    </div>
+    <div class="collapse" id="searchFilter">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.SearchTerm" class="form-label"></label>
+                            <input asp-for="SearchModel.SearchTerm" class="form-control" placeholder="プロジェクト名または説明で検索">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedBy" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedBy" class="form-control" placeholder="作成者名またはメールアドレス">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.UserRole" class="form-label"></label>
+                            <select asp-for="SearchModel.UserRole" class="form-select" asp-items="Html.GetEnumSelectList<AzureDocGen.Data.Enums.ProjectRoleType>()">
+                                <option value="">すべての権限</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedFromDate" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedFromDate" class="form-control" type="date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedToDate" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedToDate" class="form-control" type="date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.SortOrder" class="form-label"></label>
+                            <select asp-for="SearchModel.SortOrder" class="form-select" asp-items="Html.GetEnumSelectList<AzureDocGen.Web.Models.ProjectSortOrder>()">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="mb-3 w-100">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search"></i> 検索
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> リセット
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 検索結果情報 -->
+@if (Model.TotalCount > 0)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <small class="text-muted">
+            @Model.TotalCount 件中 @((Model.Page - 1) * Model.PageSize + 1)～@Math.Min(Model.Page * Model.PageSize, Model.TotalCount) 件を表示
+        </small>
+        <div>
+            <label for="pageSize" class="form-label me-2">表示件数:</label>
+            <select id="pageSize" class="form-select form-select-sm d-inline-block w-auto" onchange="changePageSize(this.value)">
+                <option value="10" selected="@(Model.PageSize == 10)">10件</option>
+                <option value="20" selected="@(Model.PageSize == 20)">20件</option>
+                <option value="50" selected="@(Model.PageSize == 50)">50件</option>
+            </select>
+        </div>
+    </div>
+}
+
+@if (!Model.Projects.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> プロジェクトがありません。新規プロジェクトを作成してください。
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var project in Model.Projects)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a asp-action="Details" asp-route-id="@project.Id" class="text-decoration-none">
+                                @project.Name
+                            </a>
+                        </h5>
+                        @if (!string.IsNullOrWhiteSpace(project.Description))
+                        {
+                            <p class="card-text text-muted">@project.Description</p>
+                        }
+                        <div class="small text-muted mb-3">
+                            <div><i class="bi bi-calendar"></i> 作成日: @project.CreatedAt.ToString("yyyy/MM/dd")</div>
+                            <div><i class="bi bi-person"></i> 作成者: @project.CreatedBy</div>
+                            @if (project.LastActivityDate.HasValue)
+                            {
+                                <div><i class="bi bi-clock-history"></i> 最終更新: @project.LastActivityDate.Value.ToString("yyyy/MM/dd")</div>
+                            }
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-people"></i> @project.MemberCount 名
+                                </span>
+                                <span class="badge bg-info">
+                                    <i class="bi bi-layers"></i> @project.EnvironmentCount 環境
+                                </span>
+                            </div>
+                            @if (project.UserRole.HasValue)
+                            {
+                                <span class="badge bg-primary">
+                                    @GetRoleDisplayName(project.UserRole.Value)
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a asp-action="Details" asp-route-id="@project.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> 詳細
+                        </a>
+                        @if (project.UserRole.HasValue && 
+                            (project.UserRole.Value == AzureDocGen.Data.Enums.ProjectRoleType.ProjectOwner ||
+                             project.UserRole.Value == AzureDocGen.Data.Enums.ProjectRoleType.ProjectManager))
+                        {
+                            <a asp-action="Edit" asp-route-id="@project.Id" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i> 編集
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <!-- ページネーション -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="プロジェクト一覧ページネーション">
+            <ul class="pagination justify-content-center">
+                @if (Model.HasPrevious)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(1)" aria-label="最初のページ">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.Page - 1)" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                }
+
+                @{
+                    var startPage = Math.Max(1, Model.Page - 2);
+                    var endPage = Math.Min(Model.TotalPages, Model.Page + 2);
+                }
+
+                @for (var i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                    </li>
+                }
+
+                @if (Model.HasNext)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.Page + 1)" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.TotalPages)" aria-label="最後のページ">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+}
+
+@functions {
+    private string GetRoleDisplayName(AzureDocGen.Data.Enums.ProjectRoleType roleType)
+    {
+        return roleType switch
+        {
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectOwner => "オーナー",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectManager => "管理者",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectReviewer => "レビューアー",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectDeveloper => "開発者",
+            AzureDocGen.Data.Enums.ProjectRoleType.ProjectViewer => "閲覧者",
+            _ => roleType.ToString()
+        };
+    }
+
+    private string GetPageUrl(int page)
+    {
+        var queryString = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(Model.SearchModel.SearchTerm))
+            queryString.Add($"SearchModel.SearchTerm={Uri.EscapeDataString(Model.SearchModel.SearchTerm)}");
+        
+        if (!string.IsNullOrWhiteSpace(Model.SearchModel.CreatedBy))
+            queryString.Add($"SearchModel.CreatedBy={Uri.EscapeDataString(Model.SearchModel.CreatedBy)}");
+        
+        if (Model.SearchModel.CreatedFromDate.HasValue)
+            queryString.Add($"SearchModel.CreatedFromDate={Model.SearchModel.CreatedFromDate.Value:yyyy-MM-dd}");
+        
+        if (Model.SearchModel.CreatedToDate.HasValue)
+            queryString.Add($"SearchModel.CreatedToDate={Model.SearchModel.CreatedToDate.Value:yyyy-MM-dd}");
+        
+        if (Model.SearchModel.UserRole.HasValue)
+            queryString.Add($"SearchModel.UserRole={Model.SearchModel.UserRole.Value}");
+        
+        queryString.Add($"SearchModel.SortOrder={Model.SearchModel.SortOrder}");
+        queryString.Add($"page={page}");
+        queryString.Add($"pageSize={Model.PageSize}");
+        
+        return $"?{string.Join("&", queryString)}";
+    }
+}
+
+<script>
+function changePageSize(pageSize) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('pageSize', pageSize);
+    urlParams.set('page', '1'); // ページサイズ変更時は1ページ目に戻る
+    window.location.search = urlParams.toString();
+}
+</script>

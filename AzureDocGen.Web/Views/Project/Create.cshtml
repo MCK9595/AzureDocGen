@@ -1,0 +1,56 @@
+@model AzureDocGen.Web.Models.ProjectCreateViewModel
+@{
+    ViewData["Title"] = "新規プロジェクト作成";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">プロジェクト一覧</a></li>
+        <li class="breadcrumb-item active" aria-current="page">新規作成</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>@ViewData["Title"]</h2>
+
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="例：○○システム基盤構築" autofocus />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" 
+                         placeholder="プロジェクトの概要を入力してください"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> 
+                プロジェクト作成後、自動的に以下が設定されます：
+                <ul class="mb-0">
+                    <li>あなたがプロジェクトオーナーとして登録されます</li>
+                    <li>開発・検証・本番の3つの環境が作成されます</li>
+                </ul>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> キャンセル
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-circle"></i> 作成
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
