@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rmdir:*)",
+      "Bash(cp:*)",
+      "Bash(timeout:*)",
+      "Bash(gtimeout:*)",
+      "Bash(curl:*)",
+      "mcp__microsoft-docs__microsoft_docs_search",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet run)",
+      "Bash(find:*)"
+    ],
+    "deny": []
+  }
+}

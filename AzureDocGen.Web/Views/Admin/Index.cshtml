@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "管理者ダッシュボード";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@ViewData["Title"]</h2>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-people"></i> ユーザー管理
+                </h5>
+                <p class="card-text">ユーザーアカウントの管理、ロールの割り当て、ステータスの変更を行います。</p>
+                <a asp-action="Users" class="btn btn-primary">ユーザー一覧</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-shield-check"></i> ロール管理
+                </h5>
+                <p class="card-text">システムロールの管理と権限設定を行います。</p>
+                <a href="#" class="btn btn-primary">ロール一覧</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-clipboard-data"></i> 監査ログ
+                </h5>
+                <p class="card-text">システムの操作ログと監査情報を確認します。</p>
+                <a href="#" class="btn btn-primary">ログ一覧</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-gear"></i> システム設定
+                </h5>
+                <p class="card-text">システム全体の設定とコンフィギュレーションを管理します。</p>
+                <a href="#" class="btn btn-secondary">設定画面</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-bar-chart"></i> システム統計
+                </h5>
+                <p class="card-text">システムの利用状況と統計情報を確認します。</p>
+                <a href="#" class="btn btn-secondary">統計情報</a>
+            </div>
+        </div>
+    </div>
+</div>

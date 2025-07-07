@@ -1,0 +1,124 @@
+@model AzureDocGen.Web.Models.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "ユーザー詳細";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>@ViewData["Title"]</h2>
+    <a asp-action="Users" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> ユーザー一覧に戻る
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">基本情報</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">名前</dt>
+                    <dd class="col-sm-8">@Model.LastName @Model.FirstName</dd>
+                    
+                    <dt class="col-sm-4">メールアドレス</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+                    
+                    <dt class="col-sm-4">部署</dt>
+                    <dd class="col-sm-8">@Model.Department</dd>
+                    
+                    <dt class="col-sm-4">ステータス</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">有効</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">無効</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-4">作成日時</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                    
+                    <dt class="col-sm-4">最終ログイン</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.LastLoginAt.HasValue)
+                        {
+                            @Model.LastLoginAt.Value.ToString("yyyy/MM/dd HH:mm")
+                        }
+                        else
+                        {
+                            <span class="text-muted">未ログイン</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">ロール管理</h5>
+            </div>
+            <div class="card-body">
+                <h6>現在のロール</h6>
+                @if (Model.AssignedRoles.Any())
+                {
+                    <div class="mb-3">
+                        @foreach (var role in Model.AssignedRoles)
+                        {
+                            <span class="badge bg-primary me-2 mb-2">
+                                @role
+                                <form asp-action="RemoveRole" asp-route-userId="@Model.Id" 
+                                      asp-route-roleName="@role" method="post" class="d-inline">
+                                    <button type="submit" class="btn-close btn-close-white ms-2" 
+                                            aria-label="削除" style="font-size: 0.7em;"
+                                            onclick="return confirm('ロール「@role」を削除しますか？')"></button>
+                                </form>
+                            </span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted mb-3">ロールが割り当てられていません。</p>
+                }
+                
+                <h6>ロールの追加</h6>
+                <form asp-action="AssignRole" method="post">
+                    <input type="hidden" name="userId" value="@Model.Id" />
+                    <div class="input-group">
+                        <select name="roleName" class="form-select" required>
+                            <option value="">ロールを選択してください</option>
+                            @foreach (var role in Model.AvailableRoles.Where(r => !Model.AssignedRoles.Contains(r)))
+                            {
+                                <option value="@role">@role</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary">追加</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

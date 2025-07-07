@@ -1,0 +1,72 @@
+@model AzureDocGen.Web.Models.DeleteAccountViewModel
+
+@{
+    ViewData["Title"] = "アカウント削除";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-danger">@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> プロフィールに戻る
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">警告</h4>
+            <p>この操作により、あなたのアカウントが無効化されます。以下の点にご注意ください：</p>
+            <ul>
+                <li>アカウントはログインできなくなります</li>
+                <li>作成したプロジェクトやテンプレートは削除されません</li>
+                <li>管理者によって復旧される可能性があります</li>
+                <li>この操作は慎重に行ってください</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">アカウント削除の確認</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="DeleteAccount" method="post">
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">アカウント情報</label>
+                        <div class="bg-light p-3 rounded">
+                            <strong>@Model.LastName @Model.FirstName</strong><br>
+                            <span class="text-muted">@Model.Email</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <div class="form-text">確認のため、現在のパスワードを入力してください</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">確認テキスト</label>
+                        <input asp-for="Confirmation" class="form-control" placeholder="「アカウントを削除」と入力してください" />
+                        <span asp-validation-for="Confirmation" class="text-danger"></span>
+                        <div class="form-text">削除を確認するため、「<strong>@Model.ConfirmationText</strong>」と正確に入力してください</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger" 
+                                onclick="return confirm('本当にアカウントを削除しますか？この操作は取り消せません。')">
+                            アカウント削除を実行
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">キャンセル</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

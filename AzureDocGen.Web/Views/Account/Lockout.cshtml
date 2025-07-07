@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "アカウントロック";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="alert alert-danger text-center">
+            <h4 class="alert-heading">アカウントがロックされました</h4>
+            <p>ログイン試行回数が上限に達したため、アカウントが一時的にロックされました。</p>
+            <p>15分後に再度お試しください。</p>
+            <hr>
+            <p class="mb-0">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">ホームに戻る</a>
+            </p>
+        </div>
+    </div>
+</div>
