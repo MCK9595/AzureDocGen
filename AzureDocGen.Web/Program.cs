@@ -153,6 +153,15 @@ builder.Services.AddScoped<IResourceService, ResourceService>();
 // ドキュメント出力サービス
 builder.Services.AddScoped<IDocumentExportService, DocumentExportService>();
 
+// 命名規則サービス
+builder.Services.AddScoped<INamingRuleService, NamingRuleService>();
+
+// 監査ログサービス
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+
+// 通知サービス
+builder.Services.AddSingleton<INotificationService, NotificationService>();
+
 // 認可ハンドラー
 builder.Services.AddScoped<IAuthorizationHandler, SystemAdministratorRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectAccessRequirementHandler>();

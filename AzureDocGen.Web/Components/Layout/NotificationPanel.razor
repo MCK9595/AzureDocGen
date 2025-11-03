@@ -1,0 +1,258 @@
+@using AzureDocGen.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject INotificationService NotificationService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+@implements IDisposable
+
+<div class="notification-panel">
+    <div class="dropdown">
+        <button class="btn btn-outline-light btn-sm position-relative" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false" @onclick="LoadNotifications">
+            <i class="bi bi-bell"></i>
+            @if (unreadCount > 0)
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @(unreadCount > 9 ? "9+" : unreadCount.ToString())
+                </span>
+            }
+        </button>
+
+        <div class="dropdown-menu dropdown-menu-end notification-dropdown" style="width: 350px; max-height: 500px; overflow-y: auto;">
+            <div class="dropdown-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">通知</span>
+                @if (unreadCount > 0)
+                {
+                    <button class="btn btn-link btn-sm text-decoration-none p-0" @onclick="MarkAllAsRead">
+                        すべて既読
+                    </button>
+                }
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm" role="status">
+                        <span class="visually-hidden">読み込み中...</span>
+                    </div>
+                </div>
+            }
+            else if (!notifications.Any())
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-bell-slash fs-3"></i>
+                    <p class="mb-0 mt-2 small">通知はありません</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var notification in notifications)
+                {
+                    <div class="dropdown-item notification-item @(!notification.IsRead ? "notification-unread" : "")"
+                         @onclick="() => OnNotificationClick(notification)"
+                         style="cursor: pointer;">
+                        <div class="d-flex">
+                            <div class="notification-icon me-2">
+                                @GetNotificationIcon(notification.Type)
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="notification-title fw-bold small">
+                                    @notification.Title
+                                </div>
+                                <div class="notification-message small text-muted">
+                                    @notification.Message
+                                </div>
+                                <div class="notification-time small text-muted">
+                                    <i class="bi bi-clock"></i>
+                                    @GetTimeAgo(notification.CreatedAt)
+                                </div>
+                            </div>
+                            @if (!notification.IsRead)
+                            {
+                                <div class="notification-badge">
+                                    <span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px;"></span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                }
+
+                <div class="dropdown-item text-center">
+                    <a href="/Notifications" class="text-decoration-none small">
+                        すべての通知を見る
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .notification-dropdown {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .notification-item {
+        padding: 0.75rem 1rem;
+        white-space: normal;
+        transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .notification-unread {
+        background-color: #e7f3ff;
+    }
+
+    .notification-icon {
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+
+    .notification-title {
+        margin-bottom: 0.25rem;
+    }
+
+    .notification-message {
+        margin-bottom: 0.25rem;
+        line-height: 1.4;
+    }
+
+    .notification-time {
+        font-size: 0.75rem;
+    }
+
+    .notification-badge {
+        align-self: center;
+    }
+</style>
+
+@code {
+    private List<Notification> notifications = new();
+    private int unreadCount = 0;
+    private bool isLoading = false;
+    private string currentUserId = "";
+    private Timer? refreshTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.Identity?.Name ?? "";
+
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            await LoadNotifications();
+
+            // 30秒ごとに通知をリフレッシュ
+            refreshTimer = new Timer(async _ => await RefreshNotifications(), null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+        }
+    }
+
+    private async Task LoadNotifications()
+    {
+        if (string.IsNullOrEmpty(currentUserId)) return;
+
+        isLoading = true;
+
+        try
+        {
+            notifications = await NotificationService.GetUserNotificationsAsync(currentUserId, unreadOnly: false, limit: 10);
+            unreadCount = await NotificationService.GetUnreadCountAsync(currentUserId);
+        }
+        catch (Exception)
+        {
+            // エラーハンドリング
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshNotifications()
+    {
+        if (string.IsNullOrEmpty(currentUserId)) return;
+
+        try
+        {
+            unreadCount = await NotificationService.GetUnreadCountAsync(currentUserId);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception)
+        {
+            // エラーハンドリング
+        }
+    }
+
+    private async Task OnNotificationClick(Notification notification)
+    {
+        // 既読にする
+        if (!notification.IsRead)
+        {
+            await NotificationService.MarkAsReadAsync(notification.Id, currentUserId);
+            notification.IsRead = true;
+            unreadCount--;
+        }
+
+        // アクションURLがあればそこに遷移
+        if (!string.IsNullOrEmpty(notification.ActionUrl))
+        {
+            Navigation.NavigateTo(notification.ActionUrl);
+        }
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationService.MarkAllAsReadAsync(currentUserId);
+        await LoadNotifications();
+    }
+
+    private RenderFragment GetNotificationIcon(NotificationType type)
+    {
+        return type switch
+        {
+            NotificationType.Success => @<i class="bi bi-check-circle-fill text-success"></i>,
+            NotificationType.Warning => @<i class="bi bi-exclamation-triangle-fill text-warning"></i>,
+            NotificationType.Error => @<i class="bi bi-x-circle-fill text-danger"></i>,
+            NotificationType.ReviewAssignment => @<i class="bi bi-clipboard-check text-primary"></i>,
+            NotificationType.ReviewApproved => @<i class="bi bi-check-circle-fill text-success"></i>,
+            NotificationType.ReviewRejected => @<i class="bi bi-x-circle-fill text-danger"></i>,
+            _ => @<i class="bi bi-info-circle-fill text-info"></i>
+        };
+    }
+
+    private string GetTimeAgo(DateTime timestamp)
+    {
+        var timeSpan = DateTime.UtcNow - timestamp;
+
+        if (timeSpan.TotalMinutes < 1)
+        {
+            return "たった今";
+        }
+        else if (timeSpan.TotalMinutes < 60)
+        {
+            return $"{(int)timeSpan.TotalMinutes}分前";
+        }
+        else if (timeSpan.TotalHours < 24)
+        {
+            return $"{(int)timeSpan.TotalHours}時間前";
+        }
+        else if (timeSpan.TotalDays < 7)
+        {
+            return $"{(int)timeSpan.TotalDays}日前";
+        }
+        else
+        {
+            return timestamp.ToLocalTime().ToString("MM/dd");
+        }
+    }
+
+    public void Dispose()
+    {
+        refreshTimer?.Dispose();
+    }
+}
