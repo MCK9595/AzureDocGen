@@ -62,39 +62,98 @@
     </div>
 </div>
 
-<!-- カテゴリーフィルター -->
-<div class="mb-4">
-    <div class="btn-group" role="group">
-        <a asp-action="Index" class="btn @(string.IsNullOrEmpty(Model.CurrentCategory) ? "btn-primary" : "btn-outline-primary")">
-            すべて
-        </a>
-        <a asp-action="Index" asp-route-category="private" class="btn @(Model.CurrentCategory == "private" ? "btn-primary" : "btn-outline-primary")">
-            プライベート
-        </a>
-        <a asp-action="Index" asp-route-category="project" class="btn @(Model.CurrentCategory == "project" ? "btn-primary" : "btn-outline-primary")">
-            プロジェクト共有
-        </a>
-        <a asp-action="Index" asp-route-category="global" class="btn @(Model.CurrentCategory == "global" ? "btn-primary" : "btn-outline-primary")">
-            グローバル共有
-        </a>
-        <a asp-action="Index" asp-route-category="recent" class="btn @(Model.CurrentCategory == "recent" ? "btn-primary" : "btn-outline-primary")">
-            最近作成
-        </a>
+<!-- 検索・フィルターフォーム -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#searchFilter">
+                <i class="bi bi-search"></i> 検索・フィルター
+            </button>
+        </h5>
+    </div>
+    <div class="collapse" id="searchFilter">
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.SearchTerm" class="form-label"></label>
+                            <input asp-for="SearchModel.SearchTerm" class="form-control" placeholder="テンプレート名または説明で検索">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.SharingLevel" class="form-label"></label>
+                            <select asp-for="SearchModel.SharingLevel" class="form-select" asp-items="Html.GetEnumSelectList<AzureDocGen.Data.Entities.SharingLevel>()">
+                                <option value="">すべての共有レベル</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedBy" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedBy" class="form-control" placeholder="作成者名またはメールアドレス">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedFromDate" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedFromDate" class="form-control" type="date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.CreatedToDate" class="form-label"></label>
+                            <input asp-for="SearchModel.CreatedToDate" class="form-control" type="date">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3">
+                            <label asp-for="SearchModel.SortOrder" class="form-label"></label>
+                            <select asp-for="SearchModel.SortOrder" class="form-select" asp-items="Html.GetEnumSelectList<AzureDocGen.Web.Models.TemplateSortOrder>()">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <div class="mb-3 w-100">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="bi bi-search"></i> 検索
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-clockwise"></i> リセット
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<!-- 検索結果情報 -->
+@if (Model.TotalCount > 0)
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <small class="text-muted">
+            @Model.TotalCount 件中 @((Model.Page - 1) * Model.PageSize + 1)～@Math.Min(Model.Page * Model.PageSize, Model.TotalCount) 件を表示
+        </small>
+        <div>
+            <label for="pageSize" class="form-label me-2">表示件数:</label>
+            <select id="pageSize" class="form-select form-select-sm d-inline-block w-auto" onchange="changePageSize(this.value)">
+                <option value="12" selected="@(Model.PageSize == 12)">12件</option>
+                <option value="24" selected="@(Model.PageSize == 24)">24件</option>
+                <option value="48" selected="@(Model.PageSize == 48)">48件</option>
+            </select>
+        </div>
+    </div>
+}
 
 @if (!Model.Templates.Any())
 {
     <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> 
-        @if (string.IsNullOrEmpty(Model.CurrentCategory))
-        {
-            <text>テンプレートがありません。新規テンプレートを作成してください。</text>
-        }
-        else
-        {
-            <text>このカテゴリーにはテンプレートがありません。</text>
-        }
+        <i class="bi bi-info-circle"></i> テンプレートがありません。新規テンプレートを作成してください。
     </div>
 }
 else
@@ -115,19 +174,19 @@ else
                                 @GetSharingLevelDisplayName(template.SharingLevel)
                             </span>
                         </div>
-                        
+
                         @if (!string.IsNullOrWhiteSpace(template.Description))
                         {
                             <p class="card-text text-muted small">@template.Description</p>
                         }
-                        
+
                         <div class="small text-muted mb-3">
                             <div><i class="bi bi-calendar"></i> 作成日: @template.CreatedAt.ToString("yyyy/MM/dd")</div>
                             <div><i class="bi bi-person"></i> 作成者: @template.CreatedBy</div>
                             <div><i class="bi bi-sliders"></i> パラメーター: @template.ParameterCount 個</div>
                             <div><i class="bi bi-layers"></i> バージョン: @template.Version</div>
                         </div>
-                        
+
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 @if (template.IsOwner)
@@ -149,8 +208,8 @@ else
                                 <i class="bi bi-pencil"></i> 編集
                             </a>
                         }
-                        <button type="button" class="btn btn-sm btn-outline-info" 
-                                data-bs-toggle="modal" data-bs-target="#duplicateModal" 
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                data-bs-toggle="modal" data-bs-target="#duplicateModal"
                                 data-template-id="@template.Id" data-template-name="@template.Name">
                             <i class="bi bi-files"></i> 複製
                         </button>
@@ -159,6 +218,54 @@ else
             </div>
         }
     </div>
+
+    <!-- ページネーション -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="テンプレート一覧ページネーション">
+            <ul class="pagination justify-content-center">
+                @if (Model.HasPrevious)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(1)" aria-label="最初のページ">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.Page - 1)" aria-label="前のページ">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                }
+
+                @{
+                    var startPage = Math.Max(1, Model.Page - 2);
+                    var endPage = Math.Min(Model.TotalPages, Model.Page + 2);
+                }
+
+                @for (var i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == Model.Page ? "active" : "")">
+                        <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                    </li>
+                }
+
+                @if (Model.HasNext)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.Page + 1)" aria-label="次のページ">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="@GetPageUrl(Model.TotalPages)" aria-label="最後のページ">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
 }
 
 <!-- 複製モーダル -->
@@ -177,7 +284,7 @@ else
                         <input type="text" class="form-control" id="newName" name="newName" required>
                     </div>
                     <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> 
+                        <i class="bi bi-info-circle"></i>
                         複製されたテンプレートはプライベートとして作成されます。
                     </div>
                 </div>
@@ -201,7 +308,7 @@ else
             _ => sharingLevel.ToString()
         };
     }
-    
+
     private string GetSharingLevelBadgeClass(AzureDocGen.Data.Entities.SharingLevel sharingLevel)
     {
         return sharingLevel switch
@@ -211,6 +318,32 @@ else
             AzureDocGen.Data.Entities.SharingLevel.Global => "bg-success",
             _ => "bg-secondary"
         };
+    }
+
+    private string GetPageUrl(int page)
+    {
+        var queryString = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(Model.SearchModel.SearchTerm))
+            queryString.Add($"SearchModel.SearchTerm={Uri.EscapeDataString(Model.SearchModel.SearchTerm)}");
+
+        if (Model.SearchModel.SharingLevel.HasValue)
+            queryString.Add($"SearchModel.SharingLevel={Model.SearchModel.SharingLevel.Value}");
+
+        if (!string.IsNullOrWhiteSpace(Model.SearchModel.CreatedBy))
+            queryString.Add($"SearchModel.CreatedBy={Uri.EscapeDataString(Model.SearchModel.CreatedBy)}");
+
+        if (Model.SearchModel.CreatedFromDate.HasValue)
+            queryString.Add($"SearchModel.CreatedFromDate={Model.SearchModel.CreatedFromDate.Value:yyyy-MM-dd}");
+
+        if (Model.SearchModel.CreatedToDate.HasValue)
+            queryString.Add($"SearchModel.CreatedToDate={Model.SearchModel.CreatedToDate.Value:yyyy-MM-dd}");
+
+        queryString.Add($"SearchModel.SortOrder={Model.SearchModel.SortOrder}");
+        queryString.Add($"page={page}");
+        queryString.Add($"pageSize={Model.PageSize}");
+
+        return $"?{string.Join("&", queryString)}";
     }
 }
 
@@ -222,10 +355,17 @@ else
                 const button = event.relatedTarget;
                 const templateId = button.getAttribute('data-template-id');
                 const templateName = button.getAttribute('data-template-name');
-                
+
                 document.getElementById('duplicateTemplateId').value = templateId;
                 document.getElementById('newName').value = templateName + ' (コピー)';
             });
         });
+
+        function changePageSize(pageSize) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('pageSize', pageSize);
+            urlParams.set('page', '1');
+            window.location.search = urlParams.toString();
+        }
     </script>
 }

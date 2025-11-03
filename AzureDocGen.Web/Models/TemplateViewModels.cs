@@ -12,6 +12,13 @@ public class TemplateIndexViewModel
     public List<TemplateListViewModel> Templates { get; set; } = new();
     public TemplateStatistics Statistics { get; set; } = new();
     public string? CurrentCategory { get; set; }
+    public TemplateSearchViewModel SearchModel { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 12;
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    public bool HasPrevious => Page > 1;
+    public bool HasNext => Page < TotalPages;
 }
 
 /// <summary>
@@ -131,4 +138,49 @@ public class ParameterAddViewModel
     [StringLength(500, ErrorMessage = "デフォルト値は{1}文字以内で入力してください。")]
     [Display(Name = "デフォルト値")]
     public string? DefaultValue { get; set; }
+}
+
+/// <summary>
+/// テンプレート検索ビューモデル
+/// </summary>
+public class TemplateSearchViewModel
+{
+    [Display(Name = "検索キーワード")]
+    public string? SearchTerm { get; set; }
+
+    [Display(Name = "共有レベル")]
+    public SharingLevel? SharingLevel { get; set; }
+
+    [Display(Name = "作成者")]
+    public string? CreatedBy { get; set; }
+
+    [Display(Name = "作成日開始")]
+    [DataType(DataType.Date)]
+    public DateTime? CreatedFromDate { get; set; }
+
+    [Display(Name = "作成日終了")]
+    [DataType(DataType.Date)]
+    public DateTime? CreatedToDate { get; set; }
+
+    [Display(Name = "並び順")]
+    public TemplateSortOrder SortOrder { get; set; } = TemplateSortOrder.CreatedDateDesc;
+}
+
+/// <summary>
+/// テンプレート並び順
+/// </summary>
+public enum TemplateSortOrder
+{
+    [Display(Name = "作成日（新しい順）")]
+    CreatedDateDesc = 0,
+    [Display(Name = "作成日（古い順）")]
+    CreatedDateAsc = 1,
+    [Display(Name = "名前（昇順）")]
+    NameAsc = 2,
+    [Display(Name = "名前（降順）")]
+    NameDesc = 3,
+    [Display(Name = "バージョン（新しい順）")]
+    VersionDesc = 4,
+    [Display(Name = "バージョン（古い順）")]
+    VersionAsc = 5
 }

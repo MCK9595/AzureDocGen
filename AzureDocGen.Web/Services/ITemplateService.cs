@@ -1,4 +1,5 @@
 using AzureDocGen.Data.Entities;
+using AzureDocGen.Web.Models;
 
 namespace AzureDocGen.Web.Services;
 
@@ -21,7 +22,12 @@ public interface ITemplateService
     /// ユーザーがアクセス可能なテンプレート一覧を取得する
     /// </summary>
     Task<List<Template>> GetUserTemplatesAsync(string userId, Guid? projectId = null);
-    
+
+    /// <summary>
+    /// ユーザーがアクセス可能なテンプレート一覧を検索・フィルター・ページネーションで取得する
+    /// </summary>
+    Task<(List<Template> templates, int totalCount)> SearchUserTemplatesAsync(string userId, TemplateSearchViewModel searchModel, int page, int pageSize);
+
     /// <summary>
     /// テンプレートを更新する
     /// </summary>

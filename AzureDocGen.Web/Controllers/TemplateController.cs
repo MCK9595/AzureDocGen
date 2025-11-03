@@ -29,7 +29,7 @@ public class TemplateController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? category = null)
+    public async Task<IActionResult> Index(TemplateSearchViewModel? searchModel, int page = 1, int pageSize = 12)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -37,21 +37,10 @@ public class TemplateController : Controller
             return Unauthorized();
         }
 
-        var templates = await _templateService.GetUserTemplatesAsync(userId);
-        var statistics = await _templateService.GetTemplateStatisticsAsync(userId);
+        searchModel ??= new TemplateSearchViewModel();
 
-        // カテゴリーフィルター
-        if (!string.IsNullOrEmpty(category))
-        {
-            templates = category.ToLower() switch
-            {
-                "private" => templates.Where(t => t.SharingLevel == SharingLevel.Private).ToList(),
-                "project" => templates.Where(t => t.SharingLevel == SharingLevel.Project).ToList(),
-                "global" => templates.Where(t => t.SharingLevel == SharingLevel.Global).ToList(),
-                "recent" => templates.Where(t => t.CreatedAt >= DateTime.UtcNow.AddDays(-30)).ToList(),
-                _ => templates
-            };
-        }
+        var statistics = await _templateService.GetTemplateStatisticsAsync(userId);
+        var (templates, totalCount) = await _templateService.SearchUserTemplatesAsync(userId, searchModel, page, pageSize);
 
         var viewModels = templates.Select(t => new TemplateListViewModel
         {
@@ -70,7 +59,10 @@ public class TemplateController : Controller
         {
             Templates = viewModels,
             Statistics = statistics,
-            CurrentCategory = category
+            SearchModel = searchModel,
+            TotalCount = totalCount,
+            Page = page,
+            PageSize = pageSize
         };
 
         return View(indexViewModel);

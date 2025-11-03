@@ -138,6 +138,9 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 // テンプレート管理サービス
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 
+// テンプレート検証サービス
+builder.Services.AddScoped<ITemplateValidationService, TemplateValidationService>();
+
 // 環境管理サービス
 builder.Services.AddScoped<IEnvironmentService, EnvironmentService>();
 

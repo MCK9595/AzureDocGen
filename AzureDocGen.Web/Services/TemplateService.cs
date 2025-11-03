@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using AzureDocGen.Data.Contexts;
 using AzureDocGen.Data.Entities;
 using AzureDocGen.Data.Enums;
+using AzureDocGen.Web.Models;
 using System.Text.Json;
 
 namespace AzureDocGen.Web.Services;
@@ -324,7 +325,7 @@ public class TemplateService : ITemplateService
     public async Task<TemplateStatistics> GetTemplateStatisticsAsync(string userId)
     {
         var templates = await GetUserTemplatesAsync(userId);
-        
+
         var stats = new TemplateStatistics
         {
             TotalTemplates = templates.Count,
@@ -336,5 +337,82 @@ public class TemplateService : ITemplateService
         };
 
         return stats;
+    }
+
+    public async Task<(List<Template> templates, int totalCount)> SearchUserTemplatesAsync(string userId, TemplateSearchViewModel searchModel, int page, int pageSize)
+    {
+        var query = _context.Templates
+            .Include(t => t.Parameters)
+            .Include(t => t.Creator)
+            .AsQueryable();
+
+        // システム管理者の場合は全テンプレートにアクセス可能
+        if (!await _permissionService.HasSystemRoleAsync(userId, SystemRoleType.SystemAdministrator))
+        {
+            // 一般ユーザーの場合は、自分が作成したテンプレート、または共有レベルがGlobalのテンプレートのみ
+            query = query.Where(t => t.CreatedBy == userId || t.SharingLevel == SharingLevel.Global);
+        }
+
+        // 検索キーワードでフィルタリング
+        if (!string.IsNullOrWhiteSpace(searchModel.SearchTerm))
+        {
+            var searchTerm = searchModel.SearchTerm.ToLower();
+            query = query.Where(t =>
+                t.Name.ToLower().Contains(searchTerm) ||
+                t.Description.ToLower().Contains(searchTerm));
+        }
+
+        // 共有レベルでフィルタリング
+        if (searchModel.SharingLevel.HasValue)
+        {
+            query = query.Where(t => t.SharingLevel == searchModel.SharingLevel.Value);
+        }
+
+        // 作成者でフィルタリング
+        if (!string.IsNullOrWhiteSpace(searchModel.CreatedBy))
+        {
+            var createdBy = searchModel.CreatedBy.ToLower();
+            query = query.Where(t =>
+                t.Creator != null &&
+                (t.Creator.Email.ToLower().Contains(createdBy) ||
+                 t.Creator.FirstName.ToLower().Contains(createdBy) ||
+                 t.Creator.LastName.ToLower().Contains(createdBy)));
+        }
+
+        // 作成日でフィルタリング
+        if (searchModel.CreatedFromDate.HasValue)
+        {
+            var fromDate = searchModel.CreatedFromDate.Value.Date;
+            query = query.Where(t => t.CreatedAt.Date >= fromDate);
+        }
+
+        if (searchModel.CreatedToDate.HasValue)
+        {
+            var toDate = searchModel.CreatedToDate.Value.Date.AddDays(1);
+            query = query.Where(t => t.CreatedAt.Date < toDate);
+        }
+
+        // 総件数を取得
+        var totalCount = await query.CountAsync();
+
+        // ソート
+        query = searchModel.SortOrder switch
+        {
+            TemplateSortOrder.CreatedDateAsc => query.OrderBy(t => t.CreatedAt),
+            TemplateSortOrder.CreatedDateDesc => query.OrderByDescending(t => t.CreatedAt),
+            TemplateSortOrder.NameAsc => query.OrderBy(t => t.Name),
+            TemplateSortOrder.NameDesc => query.OrderByDescending(t => t.Name),
+            TemplateSortOrder.VersionAsc => query.OrderBy(t => t.Version),
+            TemplateSortOrder.VersionDesc => query.OrderByDescending(t => t.Version),
+            _ => query.OrderByDescending(t => t.CreatedAt)
+        };
+
+        // ページネーション
+        var templates = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (templates, totalCount);
     }
 }
