@@ -144,6 +144,12 @@ builder.Services.AddScoped<ITemplateValidationService, TemplateValidationService
 // 環境管理サービス
 builder.Services.AddScoped<IEnvironmentService, EnvironmentService>();
 
+// 設計書管理サービス
+builder.Services.AddScoped<IDesignDocumentService, DesignDocumentService>();
+
+// リソース管理サービス
+builder.Services.AddScoped<IResourceService, ResourceService>();
+
 // 認可ハンドラー
 builder.Services.AddScoped<IAuthorizationHandler, SystemAdministratorRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectAccessRequirementHandler>();
