@@ -1,0 +1,359 @@
+@using AzureDocGen.Web.Models
+
+<div class="property-panel">
+    <div class="panel-header p-3 border-bottom">
+        <h6 class="mb-0"><i class="bi bi-sliders"></i> プロパティ</h6>
+    </div>
+
+    <div class="panel-content p-3">
+        @if (SelectedResource != null)
+        {
+            <div class="resource-info mb-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1">@SelectedResource.Name</h6>
+                        <small class="text-muted">@GetResourceTypeName(SelectedResource.ResourceType)</small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="DeleteResource" title="削除">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+
+                <div class="resource-id text-muted small mb-3">
+                    <strong>ID:</strong> @SelectedResource.Id.ToString().Substring(0, 8)...
+                </div>
+            </div>
+
+            <!-- Basic Properties -->
+            <div class="property-section mb-4">
+                <h6 class="section-title mb-3">基本プロパティ</h6>
+
+                <div class="mb-3">
+                    <label class="form-label small">リソース名</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="@SelectedResource.Name"
+                           @onchange="e => UpdateProperty("Name", e.Value?.ToString() ?? string.Empty)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">位置 (X, Y)</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm"
+                                   value="@SelectedResource.Position.X"
+                                   @onchange="e => UpdatePositionX(e.Value?.ToString())"
+                                   placeholder="X" />
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm"
+                                   value="@SelectedResource.Position.Y"
+                                   @onchange="e => UpdatePositionY(e.Value?.ToString())"
+                                   placeholder="Y" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">サイズ (幅 × 高さ)</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm"
+                                   value="@SelectedResource.Position.Width"
+                                   @onchange="e => UpdateWidth(e.Value?.ToString())"
+                                   placeholder="幅" />
+                        </div>
+                        <div class="col-6">
+                            <input type="number" class="form-control form-control-sm"
+                                   value="@SelectedResource.Position.Height"
+                                   @onchange="e => UpdateHeight(e.Value?.ToString())"
+                                   placeholder="高さ" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource-specific Properties -->
+            <div class="property-section mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="section-title mb-0">リソース固有プロパティ</h6>
+                    <button class="btn btn-sm btn-outline-primary" @onclick="AddCustomProperty">
+                        <i class="bi bi-plus"></i> 追加
+                    </button>
+                </div>
+
+                @if (SelectedResource.Properties.Any())
+                {
+                    @foreach (var prop in SelectedResource.Properties)
+                    {
+                        <div class="mb-3 property-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small mb-0">@prop.Key</label>
+                                <button class="btn btn-sm btn-link text-danger p-0"
+                                        @onclick="() => RemoveProperty(prop.Key)"
+                                        title="削除">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                            <input type="text" class="form-control form-control-sm"
+                                   value="@prop.Value?.ToString()"
+                                   @onchange="e => UpdateProperty(prop.Key, e.Value?.ToString() ?? string.Empty)" />
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3">
+                        <small>プロパティがありません</small>
+                    </div>
+                }
+            </div>
+
+            <!-- Common Azure Properties -->
+            <div class="property-section">
+                <h6 class="section-title mb-3">Azure プロパティ</h6>
+
+                <div class="mb-3">
+                    <label class="form-label small">リージョン</label>
+                    <select class="form-select form-select-sm"
+                            value="@GetPropertyValue("Region")"
+                            @onchange="e => UpdateProperty("Region", e.Value?.ToString() ?? string.Empty)">
+                        <option value="">選択してください</option>
+                        <option value="japaneast">東日本</option>
+                        <option value="japanwest">西日本</option>
+                        <option value="eastus">米国東部</option>
+                        <option value="westus">米国西部</option>
+                        <option value="westeurope">西ヨーロッパ</option>
+                        <option value="southeastasia">東南アジア</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">リソースグループ</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="@GetPropertyValue("ResourceGroup")"
+                           @onchange="e => UpdateProperty("ResourceGroup", e.Value?.ToString() ?? string.Empty)"
+                           placeholder="rg-example" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">タグ</label>
+                    <textarea class="form-control form-control-sm" rows="3"
+                              value="@GetPropertyValue("Tags")"
+                              @onchange="e => UpdateProperty("Tags", e.Value?.ToString() ?? string.Empty)"
+                              placeholder="environment=production&#10;project=myapp"></textarea>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-hand-index fs-1"></i>
+                <p class="mt-3 mb-0">リソースを選択してください</p>
+                <small>キャンバス上のリソースをクリックすると、<br />プロパティが表示されます</small>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add Property Modal -->
+@if (showAddPropertyModal)
+{
+    <div class="modal show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">プロパティを追加</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddPropertyModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">プロパティ名</label>
+                        <input type="text" class="form-control" @bind="newPropertyName" placeholder="例: SKU" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">値</label>
+                        <input type="text" class="form-control" @bind="newPropertyValue" placeholder="例: Standard_LRS" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseAddPropertyModal">キャンセル</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveNewProperty">追加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public ResourceViewModel? SelectedResource { get; set; }
+
+    [Parameter]
+    public EventCallback<(string propertyName, object value)> OnPropertyChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnDeleteResource { get; set; }
+
+    private bool showAddPropertyModal = false;
+    private string newPropertyName = "";
+    private string newPropertyValue = "";
+
+    private string GetResourceTypeName(string resourceType)
+    {
+        var typeInfo = AzureResourceTypes.AllTypes.FirstOrDefault(t => t.Type == resourceType);
+        return typeInfo?.DisplayName ?? resourceType;
+    }
+
+    private string GetPropertyValue(string propertyName)
+    {
+        if (SelectedResource?.Properties.TryGetValue(propertyName, out var value) == true)
+        {
+            return value?.ToString() ?? "";
+        }
+        return "";
+    }
+
+    private async Task UpdateProperty(string propertyName, string value)
+    {
+        if (SelectedResource == null) return;
+
+        if (propertyName == "Name")
+        {
+            SelectedResource.Name = value;
+        }
+        else
+        {
+            if (SelectedResource.Properties.ContainsKey(propertyName))
+            {
+                SelectedResource.Properties[propertyName] = value;
+            }
+            else
+            {
+                SelectedResource.Properties.Add(propertyName, value);
+            }
+        }
+
+        await OnPropertyChanged.InvokeAsync((propertyName, value));
+    }
+
+    private async Task UpdatePositionX(string? value)
+    {
+        if (SelectedResource == null || !double.TryParse(value, out var x)) return;
+        SelectedResource.Position.X = x;
+        await OnPropertyChanged.InvokeAsync(("PositionX", x));
+    }
+
+    private async Task UpdatePositionY(string? value)
+    {
+        if (SelectedResource == null || !double.TryParse(value, out var y)) return;
+        SelectedResource.Position.Y = y;
+        await OnPropertyChanged.InvokeAsync(("PositionY", y));
+    }
+
+    private async Task UpdateWidth(string? value)
+    {
+        if (SelectedResource == null || !double.TryParse(value, out var width)) return;
+        SelectedResource.Position.Width = width;
+        await OnPropertyChanged.InvokeAsync(("Width", width));
+    }
+
+    private async Task UpdateHeight(string? value)
+    {
+        if (SelectedResource == null || !double.TryParse(value, out var height)) return;
+        SelectedResource.Position.Height = height;
+        await OnPropertyChanged.InvokeAsync(("Height", height));
+    }
+
+    private void AddCustomProperty()
+    {
+        showAddPropertyModal = true;
+        newPropertyName = "";
+        newPropertyValue = "";
+    }
+
+    private void CloseAddPropertyModal()
+    {
+        showAddPropertyModal = false;
+    }
+
+    private async Task SaveNewProperty()
+    {
+        if (SelectedResource == null || string.IsNullOrWhiteSpace(newPropertyName)) return;
+
+        await UpdateProperty(newPropertyName, newPropertyValue);
+        CloseAddPropertyModal();
+    }
+
+    private async Task RemoveProperty(string propertyName)
+    {
+        if (SelectedResource == null) return;
+
+        SelectedResource.Properties.Remove(propertyName);
+        await OnPropertyChanged.InvokeAsync((propertyName, null!));
+    }
+
+    private async Task DeleteResource()
+    {
+        await OnDeleteResource.InvokeAsync();
+    }
+}
+
+<style>
+    .property-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    }
+
+    .panel-header {
+        flex-shrink: 0;
+        background: #f8f9fa;
+    }
+
+    .panel-content {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .section-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 0.5rem;
+    }
+
+    .property-item {
+        border-left: 3px solid #e9ecef;
+        padding-left: 0.5rem;
+        transition: border-color 0.2s;
+    }
+
+    .property-item:hover {
+        border-left-color: #0d6efd;
+    }
+
+    .resource-info {
+        background: #f8f9fa;
+        border-radius: 0.375rem;
+        padding: 1rem;
+    }
+
+    .panel-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .panel-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .panel-content::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .panel-content::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>

@@ -401,7 +401,117 @@ class VisualDesigner {
     }
 }
 
-// グローバル関数として公開
+// グローバルデザイナーインスタンス
+let designerInstance = null;
+
+// ES6 Module exports for Blazor
+export function initializeDesigner(canvasId, dotnetHelper) {
+    if (designerInstance) {
+        designerInstance.dispose();
+    }
+    designerInstance = new VisualDesigner(canvasId, dotnetHelper);
+    return designerInstance;
+}
+
+export function addResource(resourceId, resourceType, name, x, y, width, height, icon) {
+    if (designerInstance) {
+        return designerInstance.addResource(resourceId, resourceType, name, x, y, width, height);
+    }
+}
+
+export function addConnection(connectionId, sourceId, targetId, connectionType) {
+    if (designerInstance) {
+        designerInstance.addConnection(connectionId, sourceId, targetId, connectionType);
+    }
+}
+
+export function removeResource(resourceId) {
+    if (designerInstance) {
+        designerInstance.removeResource(resourceId);
+    }
+}
+
+export function setTool(tool) {
+    if (designerInstance) {
+        // ツール切り替えロジック（将来の拡張用）
+        console.log('Tool changed to:', tool);
+    }
+}
+
+export function zoomIn() {
+    if (designerInstance) {
+        designerInstance.scale = Math.min(3, designerInstance.scale * 1.2);
+        designerInstance.resourceLayer.setAttribute('transform', `scale(${designerInstance.scale})`);
+        designerInstance.connectionLayer.setAttribute('transform', `scale(${designerInstance.scale})`);
+    }
+}
+
+export function zoomOut() {
+    if (designerInstance) {
+        designerInstance.scale = Math.max(0.1, designerInstance.scale * 0.8);
+        designerInstance.resourceLayer.setAttribute('transform', `scale(${designerInstance.scale})`);
+        designerInstance.connectionLayer.setAttribute('transform', `scale(${designerInstance.scale})`);
+    }
+}
+
+export function resetZoom() {
+    if (designerInstance) {
+        designerInstance.scale = 1;
+        designerInstance.resourceLayer.setAttribute('transform', 'scale(1)');
+        designerInstance.connectionLayer.setAttribute('transform', 'scale(1)');
+    }
+}
+
+export function alignLeft() {
+    if (designerInstance && designerInstance.selectedResource) {
+        designerInstance.updateResourcePosition(designerInstance.selectedResource.id, 50, designerInstance.selectedResource.y);
+    }
+}
+
+export function alignCenter() {
+    if (designerInstance && designerInstance.selectedResource && designerInstance.canvas) {
+        const centerX = (designerInstance.canvas.clientWidth / 2) - (designerInstance.selectedResource.width / 2);
+        designerInstance.updateResourcePosition(designerInstance.selectedResource.id, centerX, designerInstance.selectedResource.y);
+    }
+}
+
+export function alignRight() {
+    if (designerInstance && designerInstance.selectedResource && designerInstance.canvas) {
+        const rightX = designerInstance.canvas.clientWidth - designerInstance.selectedResource.width - 50;
+        designerInstance.updateResourcePosition(designerInstance.selectedResource.id, rightX, designerInstance.selectedResource.y);
+    }
+}
+
+export function undo() {
+    // TODO: 元に戻す機能の実装
+    console.log('Undo not implemented yet');
+}
+
+export function redo() {
+    // TODO: やり直す機能の実装
+    console.log('Redo not implemented yet');
+}
+
+export function exportToJson() {
+    if (designerInstance) {
+        return designerInstance.exportToJson();
+    }
+    return null;
+}
+
+export function loadFromJson(jsonData) {
+    if (designerInstance) {
+        designerInstance.loadFromJson(jsonData);
+    }
+}
+
+export function clear() {
+    if (designerInstance) {
+        designerInstance.clear();
+    }
+}
+
+// グローバル関数として公開（後方互換性のため）
 window.VisualDesigner = VisualDesigner;
 
 window.createVisualDesigner = function (canvasId, dotnetHelper) {

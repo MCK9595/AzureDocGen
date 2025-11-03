@@ -103,6 +103,22 @@ public class ResourceService : IResourceService
         return resource;
     }
 
+    public async Task<Resource> UpdateResourcePropertiesAsync(Guid resourceId, Dictionary<string, object> properties)
+    {
+        var resource = await _context.Resources.FindAsync(resourceId);
+        if (resource == null)
+        {
+            throw new InvalidOperationException($"Resource {resourceId} not found");
+        }
+
+        resource.PropertiesJson = JsonSerializer.Serialize(properties);
+        await _context.SaveChangesAsync();
+
+        _logger.LogDebug("Resource {ResourceId} properties updated", resourceId);
+
+        return resource;
+    }
+
     public async Task<bool> DeleteResourceAsync(Guid resourceId)
     {
         var resource = await _context.Resources

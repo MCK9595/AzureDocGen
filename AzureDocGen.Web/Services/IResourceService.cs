@@ -33,6 +33,11 @@ public interface IResourceService
     Task<Resource> UpdateResourcePositionAsync(Guid resourceId, Position position);
 
     /// <summary>
+    /// リソースのプロパティを更新する
+    /// </summary>
+    Task<Resource> UpdateResourcePropertiesAsync(Guid resourceId, Dictionary<string, object> properties);
+
+    /// <summary>
     /// リソースを削除する
     /// </summary>
     Task<bool> DeleteResourceAsync(Guid resourceId);

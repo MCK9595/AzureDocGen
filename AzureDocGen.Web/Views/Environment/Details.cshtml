@@ -17,6 +17,9 @@
         <p class="text-muted">@Model.ProjectName プロジェクトの環境</p>
     </div>
     <div>
+        <a href="/Designer/Environment/@Model.Id" class="btn btn-success me-2">
+            <i class="bi bi-palette"></i> ビジュアルデザイナーを開く
+        </a>
         @if (Model.CanEdit)
         {
             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
@@ -73,6 +76,40 @@
                     <dt class="col-sm-3">設計書数</dt>
                     <dd class="col-sm-9">@Model.DesignDocuments.Count 件</dd>
                 </dl>
+            </div>
+        </div>
+
+        <!-- リソース管理 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">リソース管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2">
+                            <a href="/Designer/Environment/@Model.Id" class="btn btn-lg btn-outline-success">
+                                <i class="bi bi-palette"></i> ビジュアルデザイナー
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">
+                                ドラッグ&ドロップでAzureリソースを配置し、視覚的にインフラ設計を作成します。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info mb-0">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-info-circle"></i> ビジュアルデザイナーについて
+                            </h6>
+                            <ul class="small mb-0">
+                                <li>リソースパレットからAzureリソースをドラッグ</li>
+                                <li>キャンバス上に配置して構成図を作成</li>
+                                <li>リソース間の接続を視覚化</li>
+                                <li>自動的に保存されます</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

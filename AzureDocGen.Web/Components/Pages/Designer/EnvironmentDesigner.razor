@@ -1,0 +1,516 @@
+@page "/Designer/Environment/{EnvironmentId:guid}"
+@using AzureDocGen.Data.Entities
+@using AzureDocGen.Web.Models
+@using AzureDocGen.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject IResourceService ResourceService
+@inject IEnvironmentService EnvironmentService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>ビジュアルデザイナー - @environmentName</PageTitle>
+
+<link rel="stylesheet" href="~/css/visual-designer.css" />
+
+<div class="designer-container">
+    <!-- Header -->
+    <div class="designer-header">
+        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-palette"></i> ビジュアルデザイナー
+                </h4>
+                <small class="text-muted">@environmentName</small>
+            </div>
+            <div>
+                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="OnUndo" disabled="@(!canUndo)">
+                    <i class="bi bi-arrow-counterclockwise"></i> 元に戻す
+                </button>
+                <button class="btn btn-sm btn-outline-secondary me-2" @onclick="OnRedo" disabled="@(!canRedo)">
+                    <i class="bi bi-arrow-clockwise"></i> やり直す
+                </button>
+                <button class="btn btn-sm btn-outline-primary me-2" @onclick="OnSave" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    <i class="bi bi-save"></i> 保存
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" @onclick="OnClose">
+                    <i class="bi bi-x-lg"></i> 閉じる
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="designer-toolbar p-2 border-bottom">
+            <div class="btn-group btn-group-sm me-3" role="group">
+                <button class="btn @(currentTool == "select" ? "btn-primary" : "btn-outline-primary")"
+                        @onclick='() => SetTool("select")'>
+                    <i class="bi bi-cursor"></i> 選択
+                </button>
+                <button class="btn @(currentTool == "pan" ? "btn-primary" : "btn-outline-primary")"
+                        @onclick='() => SetTool("pan")'>
+                    <i class="bi bi-hand-index"></i> パン
+                </button>
+            </div>
+
+            <div class="btn-group btn-group-sm me-3" role="group">
+                <button class="btn btn-outline-secondary" @onclick="OnZoomIn">
+                    <i class="bi bi-zoom-in"></i>
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="OnZoomReset">
+                    <i class="bi bi-aspect-ratio"></i>
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="OnZoomOut">
+                    <i class="bi bi-zoom-out"></i>
+                </button>
+            </div>
+
+            <div class="btn-group btn-group-sm me-3" role="group">
+                <button class="btn btn-outline-secondary" @onclick="OnAlignLeft" disabled="@(!hasSelection)">
+                    <i class="bi bi-align-start"></i>
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="OnAlignCenter" disabled="@(!hasSelection)">
+                    <i class="bi bi-align-center"></i>
+                </button>
+                <button class="btn btn-outline-secondary" @onclick="OnAlignRight" disabled="@(!hasSelection)">
+                    <i class="bi bi-align-end"></i>
+                </button>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="gridSnap" @bind="gridSnapEnabled">
+                <label class="form-check-label" for="gridSnap">
+                    グリッドスナップ
+                </label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <span class="badge @(isError ? "bg-danger" : "bg-success") ms-3">
+                    @statusMessage
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="designer-main">
+        <!-- Resource Palette -->
+        <div class="designer-sidebar designer-sidebar-left">
+            <ResourcePalette OnResourceSelected="OnResourceTypeSelected" />
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="designer-canvas-area">
+            <div id="designer-canvas" class="designer-canvas"></div>
+        </div>
+
+        <!-- Properties Panel -->
+        <div class="designer-sidebar designer-sidebar-right">
+            <PropertyPanel
+                SelectedResource="selectedResource"
+                OnPropertyChanged="OnPropertyChanged"
+                OnDeleteResource="OnDeleteResource" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public Guid EnvironmentId { get; set; }
+
+    private string environmentName = "";
+    private string currentTool = "select";
+    private bool gridSnapEnabled = true;
+    private bool canUndo = false;
+    private bool canRedo = false;
+    private bool hasSelection = false;
+    private bool isSaving = false;
+    private string statusMessage = "";
+    private bool isError = false;
+
+    private ResourceViewModel? selectedResource = null;
+    private List<ResourceViewModel> resources = new();
+    private List<ResourceConnectionViewModel> connections = new();
+
+    private IJSObjectReference? designerModule;
+    private DotNetObjectReference<EnvironmentDesigner>? dotnetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var environment = await EnvironmentService.GetEnvironmentByIdAsync(EnvironmentId);
+            if (environment == null)
+            {
+                Navigation.NavigateTo("/Environment");
+                return;
+            }
+
+            environmentName = environment.Name;
+
+            // Load existing resources
+            var existingResources = await ResourceService.GetEnvironmentResourcesAsync(EnvironmentId);
+            resources = existingResources.Select(r => new ResourceViewModel
+            {
+                Id = r.Id,
+                ResourceType = r.ResourceType,
+                Name = r.Name,
+                Position = r.VisualPosition ?? new Position { X = 100, Y = 100, Width = 120, Height = 80 },
+                Properties = r.Properties ?? new Dictionary<string, object>()
+            }).ToList();
+
+            // Load connections
+            var existingConnections = await ResourceService.GetEnvironmentConnectionsAsync(EnvironmentId);
+            connections = existingConnections.Select(c => new ResourceConnectionViewModel
+            {
+                Id = c.Id,
+                SourceResourceId = c.SourceResourceId,
+                TargetResourceId = c.TargetResourceId,
+                ConnectionType = c.ConnectionType
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            ShowError($"環境の読み込みに失敗しました: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                dotnetRef = DotNetObjectReference.Create(this);
+                designerModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "/js/visual-designer.js");
+
+                await designerModule.InvokeVoidAsync("initializeDesigner", "designer-canvas", dotnetRef);
+
+                // Load existing resources into canvas
+                foreach (var resource in resources)
+                {
+                    await AddResourceToCanvas(resource);
+                }
+
+                // Load existing connections
+                foreach (var connection in connections)
+                {
+                    await AddConnectionToCanvas(connection);
+                }
+
+                ShowSuccess("デザイナーを初期化しました");
+            }
+            catch (Exception ex)
+            {
+                ShowError($"デザイナーの初期化に失敗しました: {ex.Message}");
+            }
+        }
+    }
+
+    private void SetTool(string tool)
+    {
+        currentTool = tool;
+        // Invoke JS to change tool mode
+        designerModule?.InvokeVoidAsync("setTool", tool);
+    }
+
+    private async Task OnResourceTypeSelected(string resourceType)
+    {
+        try
+        {
+            var resourceTypeInfo = AzureResourceTypes.AllTypes.FirstOrDefault(t => t.Type == resourceType);
+            if (resourceTypeInfo == null) return;
+
+            // Create new resource
+            var newResource = await ResourceService.CreateResourceAsync(
+                EnvironmentId,
+                resourceType,
+                $"{resourceTypeInfo.DisplayName}_{resources.Count + 1}",
+                new Position { X = 200, Y = 200, Width = 120, Height = 80 }
+            );
+
+            var viewModel = new ResourceViewModel
+            {
+                Id = newResource.Id,
+                ResourceType = newResource.ResourceType,
+                Name = newResource.Name,
+                Position = newResource.VisualPosition!,
+                Properties = newResource.Properties ?? new Dictionary<string, object>()
+            };
+
+            resources.Add(viewModel);
+            await AddResourceToCanvas(viewModel);
+
+            ShowSuccess($"{resourceTypeInfo.DisplayName}を追加しました");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"リソースの追加に失敗しました: {ex.Message}");
+        }
+    }
+
+    private async Task AddResourceToCanvas(ResourceViewModel resource)
+    {
+        if (designerModule != null)
+        {
+            var resourceTypeInfo = AzureResourceTypes.AllTypes.FirstOrDefault(t => t.Type == resource.ResourceType);
+            await designerModule.InvokeVoidAsync("addResource",
+                resource.Id.ToString(),
+                resource.ResourceType,
+                resource.Name,
+                resource.Position.X,
+                resource.Position.Y,
+                resource.Position.Width,
+                resource.Position.Height,
+                resourceTypeInfo?.Icon ?? "📦"
+            );
+        }
+    }
+
+    private async Task AddConnectionToCanvas(ResourceConnectionViewModel connection)
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("addConnection",
+                connection.Id.ToString(),
+                connection.SourceResourceId.ToString(),
+                connection.TargetResourceId.ToString(),
+                connection.ConnectionType
+            );
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnResourceMoved(string resourceId, double x, double y)
+    {
+        try
+        {
+            var id = Guid.Parse(resourceId);
+            var resource = resources.FirstOrDefault(r => r.Id == id);
+            if (resource != null)
+            {
+                resource.Position.X = x;
+                resource.Position.Y = y;
+
+                // Update in database
+                await ResourceService.UpdateResourcePositionAsync(id, resource.Position);
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError($"リソースの移動に失敗しました: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnResourceSelected(string resourceId)
+    {
+        try
+        {
+            var id = Guid.Parse(resourceId);
+            selectedResource = resources.FirstOrDefault(r => r.Id == id);
+            hasSelection = selectedResource != null;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            ShowError($"リソースの選択に失敗しました: {ex.Message}");
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnConnectionCreated(string sourceId, string targetId, string connectionType)
+    {
+        try
+        {
+            var sourceGuid = Guid.Parse(sourceId);
+            var targetGuid = Guid.Parse(targetId);
+
+            var connection = await ResourceService.CreateConnectionAsync(sourceGuid, targetGuid, connectionType);
+
+            connections.Add(new ResourceConnectionViewModel
+            {
+                Id = connection.Id,
+                SourceResourceId = connection.SourceResourceId,
+                TargetResourceId = connection.TargetResourceId,
+                ConnectionType = connection.ConnectionType
+            });
+
+            ShowSuccess("接続を作成しました");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"接続の作成に失敗しました: {ex.Message}");
+        }
+    }
+
+    private async Task OnPropertyChanged(string propertyName, object value)
+    {
+        if (selectedResource == null) return;
+
+        try
+        {
+            selectedResource.Properties[propertyName] = value;
+            await ResourceService.UpdateResourcePropertiesAsync(selectedResource.Id, selectedResource.Properties);
+            ShowSuccess("プロパティを更新しました");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"プロパティの更新に失敗しました: {ex.Message}");
+        }
+    }
+
+    private async Task OnDeleteResource()
+    {
+        if (selectedResource == null) return;
+
+        try
+        {
+            await ResourceService.DeleteResourceAsync(selectedResource.Id);
+            resources.Remove(selectedResource);
+
+            if (designerModule != null)
+            {
+                await designerModule.InvokeVoidAsync("removeResource", selectedResource.Id.ToString());
+            }
+
+            selectedResource = null;
+            hasSelection = false;
+            ShowSuccess("リソースを削除しました");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"リソースの削除に失敗しました: {ex.Message}");
+        }
+    }
+
+    private async Task OnSave()
+    {
+        isSaving = true;
+        try
+        {
+            // Save all resource positions and properties
+            foreach (var resource in resources)
+            {
+                await ResourceService.UpdateResourcePositionAsync(resource.Id, resource.Position);
+                await ResourceService.UpdateResourcePropertiesAsync(resource.Id, resource.Properties);
+            }
+
+            ShowSuccess("保存しました");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"保存に失敗しました: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task OnUndo()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("undo");
+        }
+    }
+
+    private async Task OnRedo()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("redo");
+        }
+    }
+
+    private async Task OnZoomIn()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("zoomIn");
+        }
+    }
+
+    private async Task OnZoomOut()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("zoomOut");
+        }
+    }
+
+    private async Task OnZoomReset()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("resetZoom");
+        }
+    }
+
+    private async Task OnAlignLeft()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("alignLeft");
+        }
+    }
+
+    private async Task OnAlignCenter()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("alignCenter");
+        }
+    }
+
+    private async Task OnAlignRight()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.InvokeVoidAsync("alignRight");
+        }
+    }
+
+    private void OnClose()
+    {
+        Navigation.NavigateTo($"/Environment/Details/{EnvironmentId}");
+    }
+
+    private void ShowSuccess(string message)
+    {
+        statusMessage = message;
+        isError = false;
+        StateHasChanged();
+
+        // Clear message after 3 seconds
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            statusMessage = "";
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void ShowError(string message)
+    {
+        statusMessage = message;
+        isError = true;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (designerModule != null)
+        {
+            await designerModule.DisposeAsync();
+        }
+        dotnetRef?.Dispose();
+    }
+}
