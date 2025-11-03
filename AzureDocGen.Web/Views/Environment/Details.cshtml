@@ -178,6 +178,35 @@
     </div>
 
     <div class="col-md-4">
+        <!-- ドキュメント出力 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-download"></i> ドキュメント出力</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">この環境の設計書を各種形式で出力できます。</p>
+                <div class="d-grid gap-2">
+                    <a asp-controller="Export" asp-action="ExportEnvironmentExcel" asp-route-id="@Model.Id" class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel"></i> Excel形式で出力
+                    </a>
+                    <a asp-controller="Export" asp-action="ExportEnvironmentMarkdown" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-markdown"></i> Markdown形式で出力
+                    </a>
+                    <a asp-controller="Export" asp-action="ExportEnvironmentPdf" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="bi bi-file-earmark-pdf"></i> PDF形式で出力
+                    </a>
+                    <a asp-controller="Export" asp-action="Preview" asp-route-environmentId="@Model.Id" class="btn btn-outline-secondary">
+                        <i class="bi bi-eye"></i> プレビュー
+                    </a>
+                </div>
+                <hr class="my-3">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Excel形式では詳細なパラメーター情報も含まれます。
+                </small>
+            </div>
+        </div>
+
         <!-- 環境統計 -->
         <div class="card">
             <div class="card-header">

@@ -150,6 +150,9 @@ builder.Services.AddScoped<IDesignDocumentService, DesignDocumentService>();
 // リソース管理サービス
 builder.Services.AddScoped<IResourceService, ResourceService>();
 
+// ドキュメント出力サービス
+builder.Services.AddScoped<IDocumentExportService, DocumentExportService>();
+
 // 認可ハンドラー
 builder.Services.AddScoped<IAuthorizationHandler, SystemAdministratorRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, ProjectAccessRequirementHandler>();
