@@ -1,0 +1,424 @@
+@page "/Workflow/Dashboard"
+@using AzureDocGen.Data.Entities
+@using AzureDocGen.Data.Enums
+@using AzureDocGen.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IReviewWorkflowService WorkflowService
+@inject IPermissionService PermissionService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>ワークフロー管理</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-diagram-3"></i> ワークフロー管理</h2>
+    <div>
+        <button class="btn btn-primary" @onclick="LoadData">
+            <i class="bi bi-arrow-clockwise"></i> 更新
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @errorMessage
+        <button type="button" class="btn-close" @onclick='() => errorMessage = ""'></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @successMessage
+        <button type="button" class="btn-close" @onclick='() => successMessage = ""'></button>
+    </div>
+}
+
+<!-- タブナビゲーション -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "myReviews" ? "active" : "")"
+                @onclick='() => ChangeTab("myReviews")' type="button">
+            <i class="bi bi-person-check"></i> 自分のレビュー
+            @if (myPendingCount > 0)
+            {
+                <span class="badge bg-danger ms-1">@myPendingCount</span>
+            }
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "projectWorkflows" ? "active" : "")"
+                @onclick='() => ChangeTab("projectWorkflows")' type="button">
+            <i class="bi bi-folder"></i> プロジェクトワークフロー
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(activeTab == "statistics" ? "active" : "")"
+                @onclick='() => ChangeTab("statistics")' type="button">
+            <i class="bi bi-graph-up"></i> 統計
+        </button>
+    </li>
+</ul>
+
+<!-- タブコンテンツ -->
+<div class="tab-content">
+    @if (activeTab == "myReviews")
+    {
+        <div class="row">
+            <!-- ステータス別カード -->
+            <div class="col-md-12 mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card text-center border-warning">
+                            <div class="card-body">
+                                <h2 class="text-warning">@myPendingCount</h2>
+                                <p class="mb-0">承認待ち</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-info">
+                            <div class="card-body">
+                                <h2 class="text-info">@myInProgressCount</h2>
+                                <p class="mb-0">レビュー中</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-success">
+                            <div class="card-body">
+                                <h2 class="text-success">@myApprovedCount</h2>
+                                <p class="mb-0">承認済み</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center border-danger">
+                            <div class="card-body">
+                                <h2 class="text-danger">@myRejectedCount</h2>
+                                <p class="mb-0">却下</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- レビュー一覧 -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">自分が担当するレビュー</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (isLoading)
+                        {
+                            <div class="text-center py-4">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">読み込み中...</span>
+                                </div>
+                            </div>
+                        }
+                        else if (!myAssignments.Any())
+                        {
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-1"></i>
+                                <p class="mt-2">現在、割り当てられているレビューはありません。</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ワークフロー</th>
+                                            <th>対象</th>
+                                            <th>ステータス</th>
+                                            <th>割り当て日</th>
+                                            <th>期限</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var assignment in myAssignments)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@assignment.Workflow?.Title</strong>
+                                                    <br />
+                                                    <small class="text-muted">@assignment.Workflow?.Description</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-secondary">
+                                                        @assignment.Workflow?.TargetType
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @GetStatusBadge(assignment.Status)
+                                                </td>
+                                                <td>@assignment.AssignedAt.ToString("yyyy/MM/dd")</td>
+                                                <td>
+                                                    @if (assignment.DueDate.HasValue)
+                                                    {
+                                                        var daysLeft = (assignment.DueDate.Value - DateTime.Now).Days;
+                                                        <span class="@(daysLeft < 3 ? "text-danger fw-bold" : "")">
+                                                            @assignment.DueDate.Value.ToString("yyyy/MM/dd")
+                                                            @if (daysLeft >= 0)
+                                                            {
+                                                                <small>(@daysLeft日後)</small>
+                                                            }
+                                                            else
+                                                            {
+                                                                <small class="text-danger">(期限超過)</small>
+                                                            }
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary"
+                                                            @onclick='() => OpenReview(assignment.WorkflowId)'
+                                                            disabled="@(assignment.Status != ReviewAssignmentStatus.Pending)">
+                                                        <i class="bi bi-eye"></i> レビュー
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (activeTab == "projectWorkflows")
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">プロジェクトワークフロー一覧</h5>
+            </div>
+            <div class="card-body">
+                @if (isLoading)
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">読み込み中...</span>
+                        </div>
+                    </div>
+                }
+                else if (!allWorkflows.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">ワークフローがありません。</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>タイトル</th>
+                                    <th>対象タイプ</th>
+                                    <th>ステータス</th>
+                                    <th>作成者</th>
+                                    <th>作成日</th>
+                                    <th>更新日</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var workflow in allWorkflows)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@workflow.Title</strong>
+                                            <br />
+                                            <small class="text-muted">@workflow.Description</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">@workflow.TargetType</span>
+                                        </td>
+                                        <td>
+                                            @GetWorkflowStatusBadge(workflow.Status)
+                                        </td>
+                                        <td>@workflow.CreatedBy</td>
+                                        <td>@workflow.CreatedAt.ToString("yyyy/MM/dd")</td>
+                                        <td>@workflow.UpdatedAt.ToString("yyyy/MM/dd")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    @onclick='() => ViewWorkflowHistory(workflow.Id)'>
+                                                <i class="bi bi-clock-history"></i> 履歴
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (activeTab == "statistics")
+    {
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">ワークフロー統計</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <h3 class="text-primary">@allWorkflows.Count</h3>
+                                <small>総ワークフロー数</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-warning">@allWorkflows.Count(w => w.Status == ReviewWorkflowStatus.InReview)</h3>
+                                <small>レビュー中</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-success">@allWorkflows.Count(w => w.Status == ReviewWorkflowStatus.Approved)</h3>
+                                <small>承認済み</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-danger">@allWorkflows.Count(w => w.Status == ReviewWorkflowStatus.Rejected)</h3>
+                                <small>却下</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">レビュー統計</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <h3 class="text-primary">@myAssignments.Count</h3>
+                                <small>総担当レビュー数</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-success">@myApprovedCount</h3>
+                                <small>承認済み</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-warning">@myPendingCount</h3>
+                                <small>承認待ち</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <h3 class="text-info">
+                                    @(myAssignments.Count > 0 ? $"{(myApprovedCount * 100.0 / myAssignments.Count):F1}%" : "0%")
+                                </h3>
+                                <small>承認率</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string activeTab = "myReviews";
+    private bool isLoading = true;
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string currentUserId = "";
+
+    private List<ReviewAssignment> myAssignments = new();
+    private List<ReviewWorkflow> allWorkflows = new();
+
+    private int myPendingCount => myAssignments.Count(a => a.Status == ReviewAssignmentStatus.Pending);
+    private int myInProgressCount => myAssignments.Count(a => a.Status == ReviewAssignmentStatus.InProgress);
+    private int myApprovedCount => myAssignments.Count(a => a.Status == ReviewAssignmentStatus.Approved);
+    private int myRejectedCount => myAssignments.Count(a => a.Status == ReviewAssignmentStatus.Rejected);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.Identity?.Name ?? "";
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        errorMessage = "";
+
+        try
+        {
+            // 自分が担当するレビューを取得
+            myAssignments = await WorkflowService.GetUserReviewAssignmentsAsync(currentUserId);
+
+            // 全ワークフローを取得（簡略化のため、プロジェクトIDはダミー）
+            // 実際にはプロジェクト選択UIを追加する必要があります
+            allWorkflows = new List<ReviewWorkflow>();
+
+            successMessage = "データを更新しました。";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"データの読み込みに失敗しました: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ChangeTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    private void OpenReview(Guid workflowId)
+    {
+        Navigation.NavigateTo($"/Workflow/Review/{workflowId}");
+    }
+
+    private void ViewWorkflowHistory(Guid workflowId)
+    {
+        Navigation.NavigateTo($"/Workflow/History/{workflowId}");
+    }
+
+    private RenderFragment GetStatusBadge(ReviewAssignmentStatus status)
+    {
+        return status switch
+        {
+            ReviewAssignmentStatus.Pending => @<span class="badge bg-warning">承認待ち</span>,
+            ReviewAssignmentStatus.InProgress => @<span class="badge bg-info">レビュー中</span>,
+            ReviewAssignmentStatus.Approved => @<span class="badge bg-success">承認済み</span>,
+            ReviewAssignmentStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+
+    private RenderFragment GetWorkflowStatusBadge(ReviewWorkflowStatus status)
+    {
+        return status switch
+        {
+            ReviewWorkflowStatus.Draft => @<span class="badge bg-secondary">下書き</span>,
+            ReviewWorkflowStatus.InReview => @<span class="badge bg-info">レビュー中</span>,
+            ReviewWorkflowStatus.Approved => @<span class="badge bg-success">承認済み</span>,
+            ReviewWorkflowStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            ReviewWorkflowStatus.Cancelled => @<span class="badge bg-warning">キャンセル</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+}

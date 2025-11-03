@@ -1,0 +1,366 @@
+@page "/Workflow/History/{WorkflowId:guid}"
+@using AzureDocGen.Data.Entities
+@using AzureDocGen.Data.Enums
+@using AzureDocGen.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IReviewWorkflowService WorkflowService
+@inject NavigationManager Navigation
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>承認履歴 - @workflowTitle</PageTitle>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/Workflow/Dashboard">ワークフロー管理</a></li>
+        <li class="breadcrumb-item active" aria-current="page">承認履歴</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-clock-history"></i> 承認履歴</h2>
+    <button class="btn btn-outline-secondary" @onclick="GoBack">
+        <i class="bi bi-arrow-left"></i> 戻る
+    </button>
+</div>
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">読み込み中...</span>
+        </div>
+    </div>
+}
+else if (workflow == null)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> ワークフローが見つかりませんでした。
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <!-- ワークフロー情報 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">@workflow.Title</h5>
+                        @GetWorkflowStatusBadge(workflow.Status)
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">@workflow.Description</p>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">対象タイプ</dt>
+                        <dd class="col-sm-9"><span class="badge bg-secondary">@workflow.TargetType</span></dd>
+
+                        <dt class="col-sm-3">作成者</dt>
+                        <dd class="col-sm-9">@workflow.CreatedBy</dd>
+
+                        <dt class="col-sm-3">作成日</dt>
+                        <dd class="col-sm-9">@workflow.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                        @if (workflow.ApprovedAt.HasValue)
+                        {
+                            <dt class="col-sm-3">承認日</dt>
+                            <dd class="col-sm-9">@workflow.ApprovedAt.Value.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                            <dt class="col-sm-3">承認者</dt>
+                            <dd class="col-sm-9">@workflow.ApprovedBy</dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+
+            <!-- タイムライン履歴 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> タイムライン</h5>
+                </div>
+                <div class="card-body">
+                    @if (workflowHistory.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var (history, index) in workflowHistory.OrderByDescending(h => h.ChangedAt).Select((h, i) => (h, i)))
+                            {
+                                <div class="timeline-item @(index < workflowHistory.Count - 1 ? "mb-4" : "")">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <div class="timeline-marker">
+                                                @GetHistoryIcon(history.FromStatus, history.ToStatus)
+                                            </div>
+                                            @if (index < workflowHistory.Count - 1)
+                                            {
+                                                <div class="timeline-line"></div>
+                                            }
+                                        </div>
+                                        <div class="col">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <div>
+                                                            <h6 class="mb-1">@GetStatusChangeTitle(history.FromStatus, history.ToStatus)</h6>
+                                                            <small class="text-muted">
+                                                                <i class="bi bi-person"></i> @history.ChangedBy
+                                                                <i class="bi bi-clock ms-2"></i> @history.ChangedAt.ToString("yyyy/MM/dd HH:mm:ss")
+                                                            </small>
+                                                        </div>
+                                                        @GetStatusChangeBadge(history.ToStatus)
+                                                    </div>
+
+                                                    @if (!string.IsNullOrWhiteSpace(history.Comment))
+                                                    {
+                                                        <div class="mt-2 p-2 bg-light rounded">
+                                                            <small>@history.Comment</small>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">履歴がありません。</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- レビューアーステータス -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> レビューアー</h5>
+                </div>
+                <div class="card-body">
+                    @if (reviewers.Any())
+                    {
+                        @foreach (var reviewer in reviewers)
+                        {
+                            <div class="mb-3 p-3 border rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>@reviewer.ReviewerId</strong>
+                                    </div>
+                                    @GetReviewerStatusBadge(reviewer.Status)
+                                </div>
+                                <small class="text-muted d-block">
+                                    割当: @reviewer.AssignedAt.ToString("MM/dd HH:mm")
+                                </small>
+                                @if (reviewer.ReviewedAt.HasValue)
+                                {
+                                    <small class="text-muted d-block">
+                                        完了: @reviewer.ReviewedAt.Value.ToString("MM/dd HH:mm")
+                                    </small>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(reviewer.Comment))
+                                {
+                                    <div class="mt-2 p-2 bg-light rounded small">
+                                        @reviewer.Comment
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">レビューアーがいません。</p>
+                    }
+                </div>
+            </div>
+
+            <!-- サマリー -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> サマリー</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4>@reviewers.Count</h4>
+                            <small class="text-muted">総レビューアー</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">@reviewers.Count(r => r.Status == ReviewAssignmentStatus.Approved)</h4>
+                            <small class="text-muted">承認済み</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-warning">@reviewers.Count(r => r.Status == ReviewAssignmentStatus.Pending)</h4>
+                            <small class="text-muted">承認待ち</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-danger">@reviewers.Count(r => r.Status == ReviewAssignmentStatus.Rejected)</h4>
+                            <small class="text-muted">却下</small>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="text-center">
+                        <small class="text-muted d-block mb-1">総変更回数</small>
+                        <h4>@workflowHistory.Count</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .timeline {
+        position: relative;
+    }
+
+    .timeline-marker {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 3px solid #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .timeline-line {
+        width: 2px;
+        height: calc(100% + 1rem);
+        background: #dee2e6;
+        margin-left: 19px;
+        margin-top: 0.5rem;
+    }
+
+    .timeline-item:last-child .timeline-line {
+        display: none;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Guid WorkflowId { get; set; }
+
+    private ReviewWorkflow? workflow;
+    private string workflowTitle = "";
+    private bool isLoading = true;
+    private List<WorkflowHistory> workflowHistory = new();
+    private List<ReviewAssignment> reviewers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+
+        try
+        {
+            workflow = await WorkflowService.GetWorkflowAsync(WorkflowId);
+            if (workflow != null)
+            {
+                workflowTitle = workflow.Title;
+                workflowHistory = await WorkflowService.GetWorkflowHistoryAsync(WorkflowId);
+                reviewers = await WorkflowService.GetWorkflowReviewersAsync(WorkflowId);
+            }
+        }
+        catch (Exception)
+        {
+            // エラーハンドリング
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/Workflow/Dashboard");
+    }
+
+    private RenderFragment GetHistoryIcon(ReviewWorkflowStatus fromStatus, ReviewWorkflowStatus toStatus)
+    {
+        if (toStatus == ReviewWorkflowStatus.Approved)
+        {
+            return @<i class="bi bi-check-circle-fill text-success fs-5"></i>;
+        }
+        else if (toStatus == ReviewWorkflowStatus.Rejected)
+        {
+            return @<i class="bi bi-x-circle-fill text-danger fs-5"></i>;
+        }
+        else if (toStatus == ReviewWorkflowStatus.InReview)
+        {
+            return @<i class="bi bi-hourglass-split text-info fs-5"></i>;
+        }
+        else if (toStatus == ReviewWorkflowStatus.Cancelled)
+        {
+            return @<i class="bi bi-slash-circle text-warning fs-5"></i>;
+        }
+        else
+        {
+            return @<i class="bi bi-circle text-secondary fs-5"></i>;
+        }
+    }
+
+    private string GetStatusChangeTitle(ReviewWorkflowStatus fromStatus, ReviewWorkflowStatus toStatus)
+    {
+        return toStatus switch
+        {
+            ReviewWorkflowStatus.Draft => "ワークフロー作成",
+            ReviewWorkflowStatus.InReview => "レビュー開始",
+            ReviewWorkflowStatus.Approved => "承認完了",
+            ReviewWorkflowStatus.Rejected => "却下",
+            ReviewWorkflowStatus.Cancelled => "キャンセル",
+            _ => "状態変更"
+        };
+    }
+
+    private RenderFragment GetWorkflowStatusBadge(ReviewWorkflowStatus status)
+    {
+        return status switch
+        {
+            ReviewWorkflowStatus.Draft => @<span class="badge bg-secondary">下書き</span>,
+            ReviewWorkflowStatus.InReview => @<span class="badge bg-info">レビュー中</span>,
+            ReviewWorkflowStatus.Approved => @<span class="badge bg-success">承認済み</span>,
+            ReviewWorkflowStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            ReviewWorkflowStatus.Cancelled => @<span class="badge bg-warning">キャンセル</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+
+    private RenderFragment GetStatusChangeBadge(ReviewWorkflowStatus status)
+    {
+        return status switch
+        {
+            ReviewWorkflowStatus.Approved => @<span class="badge bg-success">承認</span>,
+            ReviewWorkflowStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            ReviewWorkflowStatus.InReview => @<span class="badge bg-info">レビュー中</span>,
+            ReviewWorkflowStatus.Cancelled => @<span class="badge bg-warning">キャンセル</span>,
+            _ => @<span class="badge bg-secondary">@status</span>
+        };
+    }
+
+    private RenderFragment GetReviewerStatusBadge(ReviewAssignmentStatus status)
+    {
+        return status switch
+        {
+            ReviewAssignmentStatus.Pending => @<span class="badge bg-warning">承認待ち</span>,
+            ReviewAssignmentStatus.InProgress => @<span class="badge bg-info">レビュー中</span>,
+            ReviewAssignmentStatus.Approved => @<span class="badge bg-success">承認</span>,
+            ReviewAssignmentStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+}

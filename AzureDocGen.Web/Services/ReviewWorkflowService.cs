@@ -264,6 +264,15 @@ public class ReviewWorkflowService : IReviewWorkflowService
             .ToListAsync();
     }
 
+    public async Task<List<ReviewAssignment>> GetWorkflowReviewersAsync(Guid workflowId)
+    {
+        return await _context.ReviewAssignments
+            .Include(ra => ra.Reviewer)
+            .Where(ra => ra.WorkflowId == workflowId)
+            .OrderBy(ra => ra.AssignedAt)
+            .ToListAsync();
+    }
+
     public async Task<List<WorkflowHistory>> GetWorkflowHistoryAsync(Guid workflowId)
     {
         return await _context.WorkflowHistories

@@ -1,0 +1,441 @@
+@page "/Workflow/Review/{WorkflowId:guid}"
+@using AzureDocGen.Data.Entities
+@using AzureDocGen.Data.Enums
+@using AzureDocGen.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IReviewWorkflowService WorkflowService
+@inject IResourceService ResourceService
+@inject IEnvironmentService EnvironmentService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>レビュー - @workflowTitle</PageTitle>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/Workflow/Dashboard">ワークフロー管理</a></li>
+        <li class="breadcrumb-item active" aria-current="page">レビュー</li>
+    </ol>
+</nav>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @errorMessage
+        <button type="button" class="btn-close" @onclick='() => errorMessage = ""'></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @successMessage
+        <button type="button" class="btn-close" @onclick='() => successMessage = ""'></button>
+    </div>
+}
+
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">読み込み中...</span>
+        </div>
+    </div>
+}
+else if (workflow == null)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> ワークフローが見つかりませんでした。
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <!-- ワークフロー情報 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">@workflow.Title</h4>
+                    @GetWorkflowStatusBadge(workflow.Status)
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">@workflow.Description</p>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">対象タイプ</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-secondary">@workflow.TargetType</span>
+                        </dd>
+
+                        <dt class="col-sm-3">作成者</dt>
+                        <dd class="col-sm-9">@workflow.CreatedBy</dd>
+
+                        <dt class="col-sm-3">作成日</dt>
+                        <dd class="col-sm-9">@workflow.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                        <dt class="col-sm-3">最終更新</dt>
+                        <dd class="col-sm-9">@workflow.UpdatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                        <dt class="col-sm-3">バージョン</dt>
+                        <dd class="col-sm-9">v@workflow.Version</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- レビュー対象の詳細 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> レビュー対象</h5>
+                </div>
+                <div class="card-body">
+                    @if (workflow.TargetType == ReviewTargetType.Environment)
+                    {
+                        @if (targetEnvironment != null)
+                        {
+                            <h6>@targetEnvironment.Name</h6>
+                            <p class="text-muted">@targetEnvironment.Description</p>
+
+                            <div class="mt-3">
+                                <strong>リソース数:</strong> @environmentResources.Count
+                            </div>
+
+                            @if (environmentResources.Any())
+                            {
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>リソース名</th>
+                                                <th>タイプ</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var resource in environmentResources.Take(5))
+                                            {
+                                                <tr>
+                                                    <td>@resource.Name</td>
+                                                    <td><span class="badge bg-info">@resource.ResourceType</span></td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    @if (environmentResources.Count > 5)
+                                    {
+                                        <p class="text-muted small">他 @(environmentResources.Count - 5) 件...</p>
+                                    }
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">対象: @workflow.TargetType - @workflow.TargetId</p>
+                    }
+                </div>
+            </div>
+
+            <!-- レビューアクション -->
+            @if (canReview)
+            {
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-check-circle"></i> レビューアクション</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">コメント</label>
+                            <textarea class="form-control" rows="4" @bind="reviewComment"
+                                      placeholder="レビューコメントを入力してください..."></textarea>
+                            <small class="text-muted">承認または却下の理由を記入してください。</small>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button class="btn btn-success btn-lg" @onclick="ApproveReview" disabled="@isSubmitting">
+                                @if (isSubmitting && submitAction == "approve")
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                <i class="bi bi-check-lg"></i> 承認する
+                            </button>
+                            <button class="btn btn-danger btn-lg" @onclick="RejectReview" disabled="@isSubmitting">
+                                @if (isSubmitting && submitAction == "reject")
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                }
+                                <i class="bi bi-x-lg"></i> 却下する
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    このワークフローはレビュー可能な状態ではありません。
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <!-- レビューアー一覧 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> レビューアー</h5>
+                </div>
+                <div class="card-body">
+                    @if (reviewers.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var reviewer in reviewers)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-person"></i>
+                                            <strong>@reviewer.ReviewerId</strong>
+                                        </div>
+                                        @GetReviewerStatusBadge(reviewer.Status)
+                                    </div>
+                                    <small class="text-muted">
+                                        割当: @reviewer.AssignedAt.ToString("MM/dd HH:mm")
+                                    </small>
+                                    @if (reviewer.ReviewedAt.HasValue)
+                                    {
+                                        <br />
+                                        <small class="text-muted">
+                                            完了: @reviewer.ReviewedAt.Value.ToString("MM/dd HH:mm")
+                                        </small>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">レビューアーが割り当てられていません。</p>
+                    }
+                </div>
+            </div>
+
+            <!-- ワークフロー履歴 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> 履歴</h5>
+                </div>
+                <div class="card-body">
+                    @if (workflowHistory.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var history in workflowHistory.OrderByDescending(h => h.ChangedAt).Take(5))
+                            {
+                                <div class="timeline-item mb-3">
+                                    <div class="d-flex">
+                                        <div class="timeline-marker me-2">
+                                            <i class="bi bi-circle-fill text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <small class="text-muted">@history.ChangedAt.ToString("MM/dd HH:mm")</small>
+                                            <p class="mb-0">
+                                                <strong>@history.ChangedBy</strong>
+                                            </p>
+                                            <p class="mb-0 small">@history.Comment</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">履歴がありません。</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .timeline-marker {
+        width: 20px;
+        flex-shrink: 0;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Guid WorkflowId { get; set; }
+
+    private ReviewWorkflow? workflow;
+    private string workflowTitle = "";
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string submitAction = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string currentUserId = "";
+    private string reviewComment = "";
+    private bool canReview = false;
+
+    private List<ReviewAssignment> reviewers = new();
+    private List<WorkflowHistory> workflowHistory = new();
+    private Data.Entities.Environment? targetEnvironment;
+    private List<Resource> environmentResources = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        currentUserId = authState.User.Identity?.Name ?? "";
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        errorMessage = "";
+
+        try
+        {
+            workflow = await WorkflowService.GetWorkflowAsync(WorkflowId);
+            if (workflow == null)
+            {
+                return;
+            }
+
+            workflowTitle = workflow.Title;
+
+            // レビューアー一覧を取得
+            reviewers = await WorkflowService.GetWorkflowReviewersAsync(WorkflowId);
+
+            // 履歴を取得
+            workflowHistory = await WorkflowService.GetWorkflowHistoryAsync(WorkflowId);
+
+            // 現在のユーザーがレビュー可能かチェック
+            var myAssignment = reviewers.FirstOrDefault(r => r.ReviewerId == currentUserId);
+            canReview = myAssignment != null &&
+                       myAssignment.Status == ReviewAssignmentStatus.Pending &&
+                       workflow.Status == ReviewWorkflowStatus.InReview;
+
+            // レビュー対象の詳細を取得
+            if (workflow.TargetType == ReviewTargetType.Environment)
+            {
+                targetEnvironment = await EnvironmentService.GetEnvironmentByIdAsync(workflow.TargetId);
+                if (targetEnvironment != null)
+                {
+                    environmentResources = await ResourceService.GetEnvironmentResourcesAsync(workflow.TargetId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"データの読み込みに失敗しました: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ApproveReview()
+    {
+        if (string.IsNullOrWhiteSpace(reviewComment))
+        {
+            errorMessage = "コメントを入力してください。";
+            return;
+        }
+
+        isSubmitting = true;
+        submitAction = "approve";
+        errorMessage = "";
+
+        try
+        {
+            var success = await WorkflowService.ApproveReviewAsync(WorkflowId, currentUserId, reviewComment);
+            if (success)
+            {
+                successMessage = "レビューを承認しました。";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/Workflow/Dashboard");
+            }
+            else
+            {
+                errorMessage = "レビューの承認に失敗しました。";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"エラーが発生しました: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            submitAction = "";
+        }
+    }
+
+    private async Task RejectReview()
+    {
+        if (string.IsNullOrWhiteSpace(reviewComment))
+        {
+            errorMessage = "却下の理由を入力してください。";
+            return;
+        }
+
+        isSubmitting = true;
+        submitAction = "reject";
+        errorMessage = "";
+
+        try
+        {
+            var success = await WorkflowService.RejectReviewAsync(WorkflowId, currentUserId, reviewComment);
+            if (success)
+            {
+                successMessage = "レビューを却下しました。";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/Workflow/Dashboard");
+            }
+            else
+            {
+                errorMessage = "レビューの却下に失敗しました。";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"エラーが発生しました: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+            submitAction = "";
+        }
+    }
+
+    private RenderFragment GetWorkflowStatusBadge(ReviewWorkflowStatus status)
+    {
+        return status switch
+        {
+            ReviewWorkflowStatus.Draft => @<span class="badge bg-secondary">下書き</span>,
+            ReviewWorkflowStatus.InReview => @<span class="badge bg-info">レビュー中</span>,
+            ReviewWorkflowStatus.Approved => @<span class="badge bg-success">承認済み</span>,
+            ReviewWorkflowStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            ReviewWorkflowStatus.Cancelled => @<span class="badge bg-warning">キャンセル</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+
+    private RenderFragment GetReviewerStatusBadge(ReviewAssignmentStatus status)
+    {
+        return status switch
+        {
+            ReviewAssignmentStatus.Pending => @<span class="badge bg-warning">承認待ち</span>,
+            ReviewAssignmentStatus.InProgress => @<span class="badge bg-info">レビュー中</span>,
+            ReviewAssignmentStatus.Approved => @<span class="badge bg-success">承認</span>,
+            ReviewAssignmentStatus.Rejected => @<span class="badge bg-danger">却下</span>,
+            _ => @<span class="badge bg-secondary">不明</span>
+        };
+    }
+}

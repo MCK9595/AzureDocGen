@@ -48,7 +48,12 @@ public interface IReviewWorkflowService
     /// ユーザーが担当するレビュー一覧を取得
     /// </summary>
     Task<List<ReviewAssignment>> GetUserReviewAssignmentsAsync(string userId, ReviewAssignmentStatus? status = null);
-    
+
+    /// <summary>
+    /// ワークフローのレビューアー一覧を取得
+    /// </summary>
+    Task<List<ReviewAssignment>> GetWorkflowReviewersAsync(Guid workflowId);
+
     /// <summary>
     /// ワークフローの履歴を取得
     /// </summary>
